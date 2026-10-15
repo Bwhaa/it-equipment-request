@@ -16,7 +16,7 @@
   The API loads it through ConfigModule (`.env.test` when NODE_ENV=test); do not add dotenv
   wrappers to runtime scripts.
 - Do not upgrade majors (Next 16, Prisma 7, ...) or add packages not in the plan without asking.
-- `TRUST_PROXY` stays unset unless a trusted reverse proxy adds `X-Forwarded-For`; the API applies the per-IP login limit only when that header is present. Never add TRUST_PROXY to the user's `.env`.
+- `TRUST_PROXY` stays unset by default: the per-IP login limit is OFF and the per-email limit is the primary protection. Next ALWAYS sets `X-Forwarded-For` (the TCP peer of its caller) when the client sent none, passes a client-sent value through unchanged, and the BFF forwards it to the API. Set `TRUST_PROXY` only when a trusted reverse proxy overwrites or sets `X-Forwarded-For`; otherwise a client can spoof it, and in local Docker/WSL all browsers share the gateway address so one shared bucket would lock everybody out. Never add TRUST_PROXY to the user's `.env`.
 
 ## Git
 - `main` holds only the initial commit until submission. All work happens on `develop`.
