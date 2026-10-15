@@ -13,6 +13,8 @@
   `apps/web` Next.js 15 (App Router) + Tailwind 4 + shadcn/ui. `packages/shared` = types only.
 - Node 22 LTS (`.nvmrc`), `engines: >=22`. Ports: web 3000, api 3001 (prefix `/api/v1`), db 5432.
 - One root `.env` (see `.env.example`). `JWT_SECRET` is shared by api and web.
+  The API loads it through ConfigModule (`.env.test` when NODE_ENV=test); do not add dotenv
+  wrappers to runtime scripts.
 - Do not upgrade majors (Next 16, Prisma 7, ...) or add packages not in the plan without asking.
 
 ## Git
@@ -26,6 +28,10 @@
 - `docker compose up -d db`
 - `pnpm --filter api db:migrate` / `db:seed` / `db:reset` — these wrap the Prisma CLI
   with `dotenv -e ../../.env --`. Never run `prisma` directly: it cannot see the root `.env`.
+  Only exception: `prisma migrate deploy` in the e2e global setup, where DATABASE_URL is
+  already in the environment.
+- Migrations: `pnpm --filter api db:migrate --name <name>` (add `--create-only` the same way).
+  Do NOT add an extra `--`: it makes Prisma ask for the name interactively.
 - `pnpm dev` (api + web)
 - Gate before every commit — all must pass:
   `pnpm lint && pnpm typecheck && pnpm test`
@@ -47,6 +53,10 @@
 - Prisma: camelCase fields + `@map` snake_case, `@@map` table names, `@db.Uuid` ids,
   `@db.Timestamptz(3)` timestamps. Schema changes only via migrations.
   Never run `prisma db push`. Never remove the hand-written CHECK constraints (§2).
+- Prisma blocks `migrate reset` for AI agents. Never run `db:reset`, `prisma migrate reset`,
+  `db push --force-reset`, `docker compose down -v`, or drop a database yourself, and never
+  bypass that guard. If a reset is needed, stop and ask the user to run
+  `pnpm --filter api db:reset` in their own terminal.
 - Every request status change writes an AuditLog row in the SAME transaction,
   via `AuditLogService.log(tx, ...)` (create: null → PENDING).
 - Seed data lives ONLY in `seed(prisma)` in `apps/api/prisma/seed-data.ts` (fixed UUIDs +
@@ -92,7 +102,10 @@
   and show "หมด"; disable Approve + show a warning when equipment is INACTIVE or stock < qty.
 
 ## Testing
-- e2e uses the `it_equipment_test` database (`apps/api/.env.test`), never the dev database.
+- e2e uses the `it_equipment_test` database (`apps/api/.env.test`, committed, no secrets).
+  Global setup creates the database if missing, then runs `prisma migrate deploy` on it
+  (never reset). It refuses to run unless the database name ends with `_test`, and
+  `resetDb()` re-checks `current_database()` before truncating.
 - Every e2e file starts with `beforeAll(resetDb)`: one `TRUNCATE audit_logs, requests,
   equipments, users` statement, then `seed(prisma)`. Run with `--runInBand`.
 - Each feature task adds e2e tests for its own acceptance criteria.
