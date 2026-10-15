@@ -8,6 +8,16 @@ import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { LoginDto } from './dto/login.dto';
 
+/**
+ * The per-IP login limit only makes sense with a real forwarded address: without X-Forwarded-For the API sees the
+ * address of the BFF, which every user shares.
+ */
+function hasForwardedFor(req: Request): boolean {
+  const header = req.headers['x-forwarded-for'];
+  const values = Array.isArray(header) ? header : [header];
+  return values.some((value) => typeof value === 'string' && value.trim() !== '');
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -16,7 +26,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   login(@Body() dto: LoginDto, @Req() req: Request): Promise<{ accessToken: string; user: UserSummary }> {
-    return this.authService.login(dto.email, dto.password, req.ip);
+    return this.authService.login(dto.email, dto.password, hasForwardedFor(req) ? req.ip : undefined);
   }
 
   @Get('me')

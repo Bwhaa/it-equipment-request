@@ -16,6 +16,7 @@
   The API loads it through ConfigModule (`.env.test` when NODE_ENV=test); do not add dotenv
   wrappers to runtime scripts.
 - Do not upgrade majors (Next 16, Prisma 7, ...) or add packages not in the plan without asking.
+- `TRUST_PROXY` stays unset unless a trusted reverse proxy adds `X-Forwarded-For`; the API applies the per-IP login limit only when that header is present. Never add TRUST_PROXY to the user's `.env`.
 
 ## Git
 - `main` holds only the initial commit until submission. All work happens on `develop`.

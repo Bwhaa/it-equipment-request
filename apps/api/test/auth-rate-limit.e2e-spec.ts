@@ -93,6 +93,27 @@ describe('login rate limiting', () => {
   });
 });
 
+describe('per-IP limit needs a forwarded address', () => {
+  // TRUST_PROXY=loopback and LOGIN_MAX_FAILURES_PER_IP=8 in .env.test. Without a real X-Forwarded-For every caller
+  // would share the address of the BFF, so the IP limiter must stay out of the way.
+  it('12 failed logins with 12 different emails and NO X-Forwarded-For are all 401 (never 429)', async () => {
+    for (let i = 0; i < 12; i += 1) {
+      const res = await http().post('/api/v1/auth/login').send({ email: `no-xff-${i}@nowhere.example`, password: 'Whatever1' });
+      expect(res.status).toBe(401);
+    }
+  });
+
+  it('a blank X-Forwarded-For header is treated like a missing one', async () => {
+    for (let i = 0; i < 12; i += 1) {
+      const res = await http()
+        .post('/api/v1/auth/login')
+        .set('X-Forwarded-For', '   ')
+        .send({ email: `blank-xff-${i}@nowhere.example`, password: 'Whatever1' });
+      expect(res.status).toBe(401);
+    }
+  });
+});
+
 describe('login rate limit boot refusal', () => {
   const NAMES = ['LOGIN_MAX_FAILURES_PER_EMAIL', 'LOGIN_RATE_WINDOW_SECONDS'] as const;
   const saved = new Map<string, string | undefined>(NAMES.map((name) => [name, process.env[name]]));
