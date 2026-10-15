@@ -101,6 +101,8 @@
   never throw expected errors (production hides their message). Call `redirect()` only
   outside `try/catch` (it works by throwing).
 - Every data view has Loading (`loading.tsx` / skeleton), Empty, and Error states.
+- Route Handlers redirect with a RELATIVE `Location` header; middleware builds redirects with `request.nextUrl.clone()`. Never build an absolute URL from `request.url` (inside Docker it can be the container's host).
+- Never put JWT_SECRET or any secret in `next.config` `env` or a NEXT_PUBLIC_ variable. The root `.env` is loaded by `loadEnvConfig` in `next.config.ts`.
 - Show API `code`/`message` from `ApiError`; on `VERSION_CONFLICT` refetch and show the
   latest values in the form, not just a toast. Disable "request" when stock = 0
   and show "หมด"; disable Approve + show a warning when equipment is INACTIVE or stock < qty.
@@ -114,6 +116,7 @@
   equipments, users` statement, then `seed(prisma)`. Run with `--runInBand`.
 - Each feature task adds e2e tests for its own acceptance criteria.
 - Never delete or skip (`.skip`, `xit`) an existing test to make the gate pass.
+- Web unit tests use vitest in the node environment (`apps/web/test`); `pnpm test` runs them together with the API unit tests. Pages and components are verified with the curl smoke checks in the task acceptance.
 
 ## Workflow
 - Do only the current task's scope. Found something outside it? List it under
