@@ -9,6 +9,7 @@ export interface Credentials {
 
 export const ADMIN_LOGIN: Credentials = { email: 'admin@company.com', password: 'Admin@123' };
 export const EMPLOYEE1_LOGIN: Credentials = { email: 'employee1@company.com', password: 'Employee@123' };
+export const EMPLOYEE2_LOGIN: Credentials = { email: 'employee2@company.com', password: 'Employee@123' };
 
 export function signToken(app: INestApplication, payload: object): Promise<string> {
   return app.get(JwtService).signAsync(payload);

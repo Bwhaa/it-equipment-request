@@ -3,7 +3,7 @@ import { Transform, Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { trim } from './transforms';
 
-export class PaginationQueryDto {
+export class PageQueryDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -16,7 +16,9 @@ export class PaginationQueryDto {
   @Min(1)
   @Max(100)
   limit = 10;
+}
 
+export class PaginationQueryDto extends PageQueryDto {
   @IsOptional()
   @IsString()
   @Transform(trim)
@@ -24,7 +26,7 @@ export class PaginationQueryDto {
   search?: string;
 }
 
-export function toSkipTake(dto: Pick<PaginationQueryDto, 'page' | 'limit'>): { skip: number; take: number } {
+export function toSkipTake(dto: Pick<PageQueryDto, 'page' | 'limit'>): { skip: number; take: number } {
   return { skip: (dto.page - 1) * dto.limit, take: dto.limit };
 }
 
