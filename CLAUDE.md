@@ -50,6 +50,7 @@
 - Identity comes ONLY from the verified JWT (`@CurrentUser()`): never read
   `requesterId`, `actorId`, `reviewedById`, `userId` or `role` from body or query.
 - Guards: register `JwtAuthGuard` as `APP_GUARD` BEFORE `RolesGuard`.
+- Every controller route declares its access explicitly: `@Public()` or `@Roles(...)` (any logged-in user: `@Roles('EMPLOYEE', 'ADMIN')`). `route-access.e2e-spec.ts` fails if a route has neither.
 - Prisma: camelCase fields + `@map` snake_case, `@@map` table names, `@db.Uuid` ids,
   `@db.Timestamptz(3)` timestamps. Schema changes only via migrations.
   Never run `prisma db push`. Never remove the hand-written CHECK constraints (§2).
@@ -117,6 +118,7 @@
 - Conventional Commits, using the commit message given in the task.
   1 task = 1 commit (a few at most, all with the same scope).
 - Do not edit `docs/` or this file unless the task says so.
+- Long-running processes (dev servers): start them with `setsid`, remember the process group id, stop with `kill -TERM -- -<pgid>`, and before finishing check `ss -ltn` shows ports 3000/3001 free and `pgrep -fa 'nest|next'` shows nothing from this repo.
 - Never commit `.env` or secrets.
 - End every task with: files changed, commands run + results, acceptance criteria
   checked one by one, open questions, follow-ups.

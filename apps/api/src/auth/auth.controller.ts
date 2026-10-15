@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import type { AuthUser } from './auth.types';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
+import { Roles } from './decorators/roles.decorator';
 import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
@@ -18,6 +19,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @Roles('EMPLOYEE', 'ADMIN')
   me(@CurrentUser() user: AuthUser): Promise<UserSummary> {
     return this.authService.me(user.id);
   }
