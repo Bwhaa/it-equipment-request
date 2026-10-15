@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import type { EquipmentRequest, Paginated, RequestDetail } from '@app/shared';
 import type { Prisma } from '@prisma/client';
 import { AuditLogService } from '../audit-log/audit-log.service';
@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { ListRequestsQueryDto } from './dto/list-requests-query.dto';
 import { MyRequestsQueryDto } from './dto/my-requests-query.dto';
+import { RejectRequestDto } from './dto/reject-request.dto';
 import { requestDetailInclude, requestInclude } from './request.include';
 import { toEquipmentRequest, toRequestDetail } from './request.mapper';
 
@@ -93,7 +94,65 @@ export class RequestsService {
       where: { id, ...(user.role === 'EMPLOYEE' ? { requesterId: user.id } : {}) },
       include: requestDetailInclude,
     });
-    if (!found) throw new NotFoundException({ code: 'NOT_FOUND', message: 'Request not found' });
+    if (!found) throw this.requestNotFound();
     return toRequestDetail(found);
+  }
+
+  /**
+   * Approve (docs §5): status lock + atomic stock deduction + audit log in ONE transaction.
+   * Any throw rolls everything back; there is no read-then-write on stock.
+   */
+  approve(id: string, admin: AuthUser): Promise<EquipmentRequest> {
+    return this.prisma.$transaction(async (tx) => {
+      const req = await tx.request.findUnique({ where: { id } });
+      if (!req) throw this.requestNotFound();
+
+      const now = new Date();
+      const updated = await tx.request.updateMany({
+        where: { id, status: 'PENDING' },
+        data: { status: 'APPROVED', approvedAt: now, reviewedAt: now, reviewedById: admin.id },
+      });
+      if (updated.count === 0) throw this.notPending();
+
+      const stock = await tx.equipment.updateMany({
+        where: { id: req.equipmentId, status: 'ACTIVE', stockQuantity: { gte: req.quantity } },
+        data: { stockQuantity: { decrement: req.quantity }, version: { increment: 1 } },
+      });
+      if (stock.count === 0) {
+        // Re-read only to pick the right error; throwing rolls back the status update above.
+        const equipment = await tx.equipment.findUniqueOrThrow({ where: { id: req.equipmentId } });
+        throw equipment.status !== 'ACTIVE'
+          ? new ConflictException({ code: 'EQUIPMENT_INACTIVE', message: 'Equipment is inactive' })
+          : new ConflictException({ code: 'INSUFFICIENT_STOCK', message: `Only ${equipment.stockQuantity} left` });
+      }
+
+      await this.auditLog.log(tx, { requestId: id, actorId: admin.id, from: 'PENDING', to: 'APPROVED' });
+      return toEquipmentRequest(await tx.request.findUniqueOrThrow({ where: { id }, include: requestInclude }));
+    });
+  }
+
+  /** Reject: status lock + audit log in ONE transaction; stock is never touched. */
+  reject(id: string, dto: RejectRequestDto, admin: AuthUser): Promise<EquipmentRequest> {
+    return this.prisma.$transaction(async (tx) => {
+      const req = await tx.request.findUnique({ where: { id } });
+      if (!req) throw this.requestNotFound();
+
+      const updated = await tx.request.updateMany({
+        where: { id, status: 'PENDING' },
+        data: { status: 'REJECTED', rejectReason: dto.rejectReason, reviewedAt: new Date(), reviewedById: admin.id },
+      });
+      if (updated.count === 0) throw this.notPending();
+
+      await this.auditLog.log(tx, { requestId: id, actorId: admin.id, from: 'PENDING', to: 'REJECTED' });
+      return toEquipmentRequest(await tx.request.findUniqueOrThrow({ where: { id }, include: requestInclude }));
+    });
+  }
+
+  private requestNotFound(): NotFoundException {
+    return new NotFoundException({ code: 'NOT_FOUND', message: 'Request not found' });
+  }
+
+  private notPending(): ConflictException {
+    return new ConflictException({ code: 'INVALID_STATUS', message: 'Request is not PENDING' });
   }
 }
