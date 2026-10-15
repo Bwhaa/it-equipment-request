@@ -63,6 +63,7 @@ export type ErrorCode =
   | 'EQUIPMENT_INACTIVE'
   | 'VERSION_CONFLICT'
   | 'EQUIPMENT_UNAVAILABLE'
+  | 'TOO_MANY_REQUESTS'
   | 'INTERNAL_ERROR';
 
 export interface ApiError {

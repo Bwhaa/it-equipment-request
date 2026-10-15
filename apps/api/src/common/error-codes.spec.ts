@@ -5,8 +5,8 @@ describe('isErrorCode', () => {
     expect(isErrorCode(code)).toBe(true);
   });
 
-  it('covers exactly ten codes', () => {
-    expect(Object.keys(ERROR_STATUS)).toHaveLength(10);
+  it('covers exactly eleven codes', () => {
+    expect(Object.keys(ERROR_STATUS)).toHaveLength(11);
   });
 
   it.each(['NOPE', 5, null, undefined, 'toString', '__proto__'])('false for %p', (value) => {

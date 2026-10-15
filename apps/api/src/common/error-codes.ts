@@ -10,6 +10,7 @@ export const ERROR_STATUS = {
   EQUIPMENT_INACTIVE: 409,
   VERSION_CONFLICT: 409,
   EQUIPMENT_UNAVAILABLE: 422,
+  TOO_MANY_REQUESTS: 429,
   INTERNAL_ERROR: 500,
 } as const satisfies Record<ErrorCode, number>;
 

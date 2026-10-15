@@ -1,8 +1,17 @@
-import { ArgumentsHost, BadRequestException, ConflictException, HttpException, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { HttpExceptionFilter } from './http-exception.filter';
 
 interface Harness {
   host: ArgumentsHost;
+  setHeader: jest.Mock;
   status: jest.Mock;
   json: jest.Mock;
 }
@@ -10,12 +19,13 @@ interface Harness {
 function makeHost(headersSent = false): Harness {
   const json = jest.fn();
   const status = jest.fn().mockReturnValue({ json });
-  const res = { status, headersSent, locals: { requestId: 'rid-1' } };
+  const setHeader = jest.fn();
+  const res = { status, setHeader, headersSent, locals: { requestId: 'rid-1' } };
   const req = { method: 'GET', url: '/api/v1/x' };
   const host = {
     switchToHttp: () => ({ getRequest: () => req, getResponse: () => res }),
   } as unknown as ArgumentsHost;
-  return { host, status, json };
+  return { host, setHeader, status, json };
 }
 
 describe('HttpExceptionFilter', () => {
@@ -124,6 +134,49 @@ describe('HttpExceptionFilter', () => {
     const { host, json } = makeHost();
     filter.catch(new NotFoundException({ code: 'NOPE', message: 'z' }), host);
     expect(json).toHaveBeenCalledWith({ statusCode: 404, error: 'Not Found', message: 'z', code: 'NOT_FOUND' });
+  });
+
+  it('429 with retryAfter sets the Retry-After header and keeps the body at four keys', () => {
+    const { host, setHeader, status, json } = makeHost();
+    filter.catch(
+      new HttpException(
+        { code: 'TOO_MANY_REQUESTS', message: 'slow down', retryAfter: 42 },
+        HttpStatus.TOO_MANY_REQUESTS,
+      ),
+      host,
+    );
+    expect(status).toHaveBeenCalledWith(429);
+    expect(setHeader).toHaveBeenCalledWith('Retry-After', '42');
+    expect(json).toHaveBeenCalledWith({
+      statusCode: 429,
+      error: 'Too Many Requests',
+      message: 'slow down',
+      code: 'TOO_MANY_REQUESTS',
+    });
+    expect(Object.keys(json.mock.calls[0][0] as object).sort()).toEqual(['code', 'error', 'message', 'statusCode']);
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('Retry-After is rounded up to an integer of at least 1 second', () => {
+    const { host, setHeader } = makeHost();
+    filter.catch(
+      new HttpException({ code: 'TOO_MANY_REQUESTS', message: 'm', retryAfter: 0.2 }, HttpStatus.TOO_MANY_REQUESTS),
+      host,
+    );
+    expect(setHeader).toHaveBeenCalledWith('Retry-After', '1');
+  });
+
+  it('429 without retryAfter sets no header; other statuses never set it', () => {
+    const first = makeHost();
+    filter.catch(new HttpException({ code: 'TOO_MANY_REQUESTS', message: 'm' }, HttpStatus.TOO_MANY_REQUESTS), first.host);
+    expect(first.setHeader).not.toHaveBeenCalled();
+
+    const second = makeHost();
+    filter.catch(
+      new HttpException({ code: 'INVALID_STATUS', message: 'm', retryAfter: 5 }, HttpStatus.CONFLICT),
+      second.host,
+    );
+    expect(second.setHeader).not.toHaveBeenCalled();
   });
 
   it('headers already sent -> nothing is written', () => {

@@ -126,6 +126,7 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 - **Ownership check (ใน service):** Employee เรียก `GET /requests/:id` ของคนอื่น → `404` (ไม่ใช้ 403 เพื่อไม่เปิดเผยว่า id มีอยู่จริง)
 - **`requester_id` มาจาก `req.user.sub` เสมอ** ไม่รับจาก body
 - **Validation:** `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })` + class-validator ทุก DTO; `ParseUUIDPipe` กับทุก `:id`
+- **Login rate limit:** นับเฉพาะการ login ที่ล้มเหลว (รหัสผิด/ไม่พบ email) ต่อ email (แปลงเป็นตัวพิมพ์เล็ก) เกิน 10 ครั้งใน 15 นาที (ตั้งค่าได้ด้วย env) → `429 TOO_MANY_REQUESTS` พร้อม header `Retry-After`; login สำเร็จล้างตัวนับของ email นั้น; จำกัดต่อ IP เพิ่มเฉพาะเมื่อตั้ง `TRUST_PROXY` เพราะผ่าน BFF IP ที่ API เห็นคือ Next server (Next ต้องส่ง `X-Forwarded-For` ต่อ); เก็บในหน่วยความจำ (รีสตาร์ตแล้วหาย) พอสำหรับ instance เดียว
 
 **Frontend = BFF (Backend-for-Frontend):** token อยู่ใน httpOnly cookie ซึ่ง JS ฝั่ง browser อ่านไม่ได้ จึงไม่ให้ browser เรียก NestJS ตรง
 
@@ -154,7 +155,7 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 
 | Method | Path | Role | Body / Query | Response |
 | --- | --- | --- | --- | --- |
-| POST | `/auth/login` | Public | `{ email, password }` | `200 { accessToken, user: { id, name, email, role } }` / `401` — นี่คือ response ของ NestJS; Next.js Route Handler ส่งต่อให้ browser แค่ `{ user }` (ดู §3) |
+| POST | `/auth/login` | Public | `{ email, password }` | `200 { accessToken, user: { id, name, email, role } }` / `401` / `429` — นี่คือ response ของ NestJS; Next.js Route Handler ส่งต่อให้ browser แค่ `{ user }` (ดู §3) |
 | GET | `/auth/me` | Any | — | `200 { id, name, email, role }` |
 
 ### 4.2 Equipments
@@ -373,6 +374,7 @@ FE เจอ `409 VERSION_CONFLICT` → refetch แล้วแสดงค่�
 | 409 | อุปกรณ์ถูกปิดใช้งานตอน approve | `EQUIPMENT_INACTIVE` |
 | 409 | `version` ไม่ตรงตอนแก้อุปกรณ์ | `VERSION_CONFLICT` |
 | 422 | สร้างคำขอกับอุปกรณ์ที่ stock 0 / quantity เกิน stock | `EQUIPMENT_UNAVAILABLE` |
+| 429 | login ล้มเหลวเกินกำหนด (มี header `Retry-After`) | `TOO_MANY_REQUESTS` |
 | 500 | error ที่ไม่ได้คาดไว้ (message กลางๆ ไม่ส่ง stack ให้ client, log ฝั่ง server พร้อม request id) | `INTERNAL_ERROR` |
 
 Service ทุกตัว throw ด้วย `new XxxException({ code, message })` เสมอ เพื่อให้ filter มี `code` ส่งต่อ; exception ที่ไม่มี code (เช่นจาก ValidationPipe) filter เติมจาก status ให้

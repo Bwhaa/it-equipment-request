@@ -18,6 +18,7 @@ interface ResolvedError {
   status: number;
   message: string | string[];
   rawCode: unknown;
+  retryAfter?: number;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -41,7 +42,13 @@ function resolveHttpException(exception: HttpException): ResolvedError {
     return { status: exception.getStatus(), message: response, rawCode: undefined };
   }
   const message = isRecord(response) && isMessage(response.message) ? response.message : exception.message;
-  return { status: exception.getStatus(), message, rawCode: isRecord(response) ? response.code : undefined };
+  const retryAfter = isRecord(response) && typeof response.retryAfter === 'number' ? response.retryAfter : undefined;
+  return {
+    status: exception.getStatus(),
+    message,
+    rawCode: isRecord(response) ? response.code : undefined,
+    retryAfter,
+  };
 }
 
 function resolve(exception: unknown): ResolvedError | undefined {
@@ -79,7 +86,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       return;
     }
 
-    const { status, message, rawCode } = resolved;
+    const { status, message, rawCode, retryAfter } = resolved;
     let code: ErrorCode;
     if (isErrorCode(rawCode)) {
       code = rawCode;
@@ -92,6 +99,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
       if (derived === undefined) {
         this.logger.warn(`${where} -> ${status}: no valid error code, falling back to VALIDATION_ERROR`);
       }
+    }
+    if (status === 429 && retryAfter !== undefined) {
+      res.setHeader('Retry-After', String(Math.max(1, Math.ceil(retryAfter))));
     }
     this.send(res, status, message, code);
   }

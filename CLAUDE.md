@@ -4,7 +4,7 @@
 - `docs/checkpoint-1.2.md` is the source of truth: schema, endpoints, DTO rules,
   error codes, transaction design. Cite its section numbers (e.g. "§5.1") in your summary.
 - `docs/erDiagram.txt` is the schema. Prisma models must match it exactly.
-- Approved additions to the docs: error code `INTERNAL_ERROR` (500) in §6.
+- Approved additions (already merged into the docs): error codes `INTERNAL_ERROR` (500) and `TOO_MANY_REQUESTS` (429) in §6.
 - If the task, this file, and the docs disagree, or the docs don't cover a case:
   STOP and ask. Do not guess, do not invent endpoints, fields, or status codes.
 
@@ -51,6 +51,7 @@
   `requesterId`, `actorId`, `reviewedById`, `userId` or `role` from body or query.
 - Guards: register `JwtAuthGuard` as `APP_GUARD` BEFORE `RolesGuard`.
 - Every controller route declares its access explicitly: `@Public()` or `@Roles(...)` (any logged-in user: `@Roles('EMPLOYEE', 'ADMIN')`). `route-access.e2e-spec.ts` fails if a route has neither.
+- Failed logins are rate limited (§3). Never remove or weaken the limiter to make a test pass; tests use unique emails / X-Forwarded-For values.
 - Prisma: camelCase fields + `@map` snake_case, `@@map` table names, `@db.Uuid` ids,
   `@db.Timestamptz(3)` timestamps. Schema changes only via migrations.
   Never run `prisma db push`. Never remove the hand-written CHECK constraints (§2).
