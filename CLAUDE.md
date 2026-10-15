@@ -52,6 +52,7 @@
 - Guards: register `JwtAuthGuard` as `APP_GUARD` BEFORE `RolesGuard`.
 - Every controller route declares its access explicitly: `@Public()` or `@Roles(...)` (any logged-in user: `@Roles('EMPLOYEE', 'ADMIN')`). `route-access.e2e-spec.ts` fails if a route has neither.
 - Failed logins are rate limited (§3). Never remove or weaken the limiter to make a test pass; tests use unique emails / X-Forwarded-For values.
+- Every user-supplied `search` goes through `escapeLike()` (`common/escape-like.ts`) before a Prisma `contains`, and every paginated list has a deterministic order that ends with `id`.
 - Prisma: camelCase fields + `@map` snake_case, `@@map` table names, `@db.Uuid` ids,
   `@db.Timestamptz(3)` timestamps. Schema changes only via migrations.
   Never run `prisma db push`. Never remove the hand-written CHECK constraints (§2).
@@ -120,6 +121,7 @@
   1 task = 1 commit (a few at most, all with the same scope).
 - Do not edit `docs/` or this file unless the task says so.
 - Long-running processes (dev servers): start them with `setsid`, remember the process group id, stop with `kill -TERM -- -<pgid>`, and before finishing check `ss -ltn` shows ports 3000/3001 free and `pgrep -fa 'nest|next'` shows nothing from this repo.
+- Smoke tests against the dev API are read-only (GET + login only). Anything that creates or changes data runs in e2e on the test database.
 - Never commit `.env` or secrets.
 - End every task with: files changed, commands run + results, acceptance criteria
   checked one by one, open questions, follow-ups.

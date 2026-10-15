@@ -168,6 +168,8 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 | POST | `/equipments` | ADMIN | `{ name, category, stockQuantity, status? }` | `201 Equipment` |
 | PATCH | `/equipments/:id` | ADMIN | `{ version, name?, category?, stockQuantity?, status? }` — **`version` บังคับ** | `200 Equipment` / `409 VERSION_CONFLICT` ถ้ามีคนแก้หรือ approve ไปก่อน |
 
+**พฤติกรรมของ list:** เรียงตาม `name` จากน้อยไปมาก แล้วตาม `id` เสมอ (pagination คงที่); `category` ตรงตัวทั้งคำ (ตัวพิมพ์ใหญ่เล็กมีผล); `search` เป็น contains ไม่สนตัวพิมพ์ และตัวอักษร `%` `_` `\` ถูกตีเป็นตัวอักษรธรรมดา (`escapeLike`); `/equipments/categories` เรียงจากน้อยไปมาก; Employee ที่ส่ง `status` มา → ไม่มีผล (บังคับ ACTIVE)
+
 ### 4.3 Requests
 
 | Method | Path | Role | Body / Query | Response |
@@ -181,6 +183,8 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 
 `/requests/me` ต้องประกาศก่อน `/requests/:id` ใน controller ไม่งั้น `me` จะถูกจับเป็น `:id` (แต่ `ParseUUIDPipe` ก็กันได้อีกชั้น)
 
+**พฤติกรรมของ list/detail:** `/requests/me` และ `/requests` เรียง `createdAt` จากใหม่ไปเก่าเป็นค่าเริ่มต้น (ตามด้วย `id`; Admin เปลี่ยนได้ด้วย `sort=createdAt:asc`); `/requests/me` รับเฉพาะ `status`, `page`, `limit` (ส่ง `search` → 400); `search` ของ `/requests` เป็น contains ไม่สนตัวพิมพ์บนชื่ออุปกรณ์หรือชื่อผู้ขอ และ `%` `_` `\` เป็นตัวอักษรธรรมดา; `/requests/:id` คืน `auditLogs` เรียงเก่าไปใหม่; `POST /requests` เช็ก stock แบบ soft check (ไม่หัก stock): `quantity` เท่ากับ stock ได้ และคำขอ PENDING หลายใบรวมกันเกิน stock ได้
+
 ### 4.4 Validation (DTO)
 
 | DTO | Field | Rule |
@@ -189,8 +193,8 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 | CreateEquipmentDto | name | `@IsString() @Transform(trim) @Length(1, 120)` |
 | | category | `@IsString() @Transform(trim) @Length(1, 60)` |
 | | stockQuantity | `@IsInt() @Min(0) @Max(100000)` — กัน int overflow |
-| | status | `@IsOptional() @IsEnum(EquipmentStatus)` — **ไม่ใส่ default ใน DTO** ให้ Prisma `@default(ACTIVE)` จัดการ |
-| UpdateEquipmentDto | ทุก field | `PartialType(CreateEquipmentDto)` — ต้องมีอย่างน้อย 1 field นอกจาก `version` |
+| | status | `@ValidateIf((_o, value) => value !== undefined) @IsEnum(EquipmentStatus)` — **ไม่ใส่ default ใน DTO** ให้ Prisma `@default(ACTIVE)` จัดการ; ไม่ใช้ `@IsOptional()` เพราะปล่อย `null` ผ่านไปถึง Prisma (ได้ 500) ส่วนนี้ `status: null` ได้ 400 |
+| UpdateEquipmentDto | ทุก field | `PartialType(CreateEquipmentDto)` — ต้องมีอย่างน้อย 1 field นอกจาก `version`; ค่า `null` ของ field ใด → `400` (`PartialType` ทำให้ทุก field เป็น optional ซึ่งปล่อย `null` ผ่าน) |
 | | version | `@IsInt() @Min(1)` — **บังคับ** (optimistic lock) |
 | CreateRequestDto | equipmentId | `@IsUUID()` |
 | | quantity | `@IsInt() @Min(1) @Max(100)` — กัน 0, ติดลบ, ทศนิยม |
@@ -338,6 +342,8 @@ async update(id: string, dto: UpdateEquipmentDto): Promise<Equipment> {
   const { version, ...data } = dto;
   if (Object.values(data).every((v) => v === undefined))
     throw new BadRequestException({ code: 'VALIDATION_ERROR', message: 'At least one field besides version is required' });
+  if (Object.values(data).some((v) => v === null))
+    throw new BadRequestException({ code: 'VALIDATION_ERROR', message: 'Fields must not be null' });
   const res = await this.prisma.equipment.updateMany({
     where: { id, version },
     data: { ...data, version: { increment: 1 } },
@@ -400,6 +406,8 @@ async update(id: string, dto: UpdateEquipmentDto, actorId: string): Promise<Equi
   const { version, ...data } = dto;
   if (Object.values(data).every((v) => v === undefined))
     throw new BadRequestException({ code: 'VALIDATION_ERROR', message: 'At least one field besides version is required' });
+  if (Object.values(data).some((v) => v === null))
+    throw new BadRequestException({ code: 'VALIDATION_ERROR', message: 'Fields must not be null' });
 
   return this.prisma.$transaction(async (tx) => {
     // อ่าน from_qty ก่อน update; ถ้า version ยังตรงตอน update แปลว่า stock ไม่ถูกแตะระหว่างนี้
