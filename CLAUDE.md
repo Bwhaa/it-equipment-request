@@ -10,7 +10,7 @@
 
 ## Stack & layout
 - pnpm workspace. `apps/api` NestJS 11 + Prisma 6 + PostgreSQL 16.
-  `apps/web` Next.js 15 (App Router) + Tailwind 4 + shadcn/ui. `packages/shared` = types only.
+  `apps/web` Next.js 15 (App Router) + Tailwind 4 + plain Tailwind components in `apps/web/components/ui` (no component library). `packages/shared` = types only.
 - Node 22 LTS (`.nvmrc`), `engines: >=22`. Ports: web 3000, api 3001 (prefix `/api/v1`), db 5432.
 - One root `.env` (see `.env.example`). `JWT_SECRET` is shared by api and web.
   The API loads it through ConfigModule (`.env.test` when NODE_ENV=test); do not add dotenv
@@ -106,6 +106,10 @@
 - Show API `code`/`message` from `ApiError`; on `VERSION_CONFLICT` refetch and show the
   latest values in the form, not just a toast. Disable "request" when stock = 0
   and show "หมด"; disable Approve + show a warning when equipment is INACTIVE or stock < qty.
+- A file with `'use server'` exports ONLY async functions; keep state types, initial state and constants in separate files. A Server Action catches only `ApiRequestError` and never wraps `redirect()` or `notFound()` in a try/catch that swallows them.
+- Client-side validation must never be stricter than the server and must not decide business rules the API owns (for example, the stock check is a soft check made by the API: quantities above the stock are allowed to reach it).
+- Dates are shown with `formatDateTime` in `lib/format.ts` (Asia/Bangkok, Gregorian years) so server and client render the same text.
+- Pages with a `loading.tsx` stream, so `notFound()` renders the not-found content with HTTP 200 (verified on the production build). Authorization and 404 semantics are enforced and tested at the API level (e2e); do not assert a 404 status for web pages.
 
 ## Testing
 - e2e uses the `it_equipment_test` database (`apps/api/.env.test`, committed, no secrets).
@@ -126,6 +130,7 @@
 - Do not edit `docs/` or this file unless the task says so.
 - Long-running processes (dev servers): start them with `setsid`, remember the process group id, stop with `kill -TERM -- -<pgid>`, and before finishing check `ss -ltn` shows ports 3000/3001 free and `pgrep -fa 'nest|next'` shows nothing from this repo.
 - Smoke tests against the dev API are read-only (GET + login only). Anything that creates or changes data runs in e2e on the test database.
+- Never run `rm` with a variable that could be empty or unquoted: use a literal path or `"${VAR:?}"`.
 - Never commit `.env` or secrets.
 - End every task with: files changed, commands run + results, acceptance criteria
   checked one by one, open questions, follow-ups.
