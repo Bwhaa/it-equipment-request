@@ -1,0 +1,47 @@
+erDiagram
+  EQUIPMENTS ||--o{ REQUESTS : "requested in"
+  USERS ||--o{ REQUESTS : "creates (requester_id)"
+  USERS |o--o{ REQUESTS : "reviews (reviewed_by_id)"
+  USERS ||--o{ AUDIT_LOGS : "performs (actor_id)"
+  REQUESTS ||--|{ AUDIT_LOGS : "has history"
+  USERS {
+    uuid id PK
+    varchar email UK
+    varchar password_hash
+    varchar name
+    enum role "EMPLOYEE, ADMIN"
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  EQUIPMENTS {
+    uuid id PK
+    varchar name
+    varchar category
+    int stock_quantity "CHECK >= 0"
+    enum status "ACTIVE, INACTIVE (default ACTIVE)"
+    int version "optimistic lock, default 1"
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  REQUESTS {
+    uuid id PK
+    uuid requester_id FK
+    uuid equipment_id FK
+    int quantity "CHECK > 0"
+    text reason "NOT NULL"
+    enum status "PENDING, APPROVED, REJECTED"
+    text reject_reason "required if REJECTED"
+    uuid reviewed_by_id FK "nullable"
+    timestamptz reviewed_at "nullable"
+    timestamptz approved_at "nullable"
+    timestamptz created_at
+    timestamptz updated_at
+  }
+  AUDIT_LOGS {
+    uuid id PK
+    uuid request_id FK
+    uuid actor_id FK
+    enum from_status "nullable (create)"
+    enum to_status
+    timestamptz created_at
+  }
