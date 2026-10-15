@@ -31,6 +31,17 @@ const ROUTES = [
   'app/(app)/equipments/[id]/request',
   'app/(app)/requests',
   'app/(app)/requests/[id]',
+  'app/(app)/admin/requests',
+  'app/(app)/admin/requests/[id]',
+  'app/(app)/admin/equipments',
+  'app/(app)/admin/equipments/new',
+  'app/(app)/admin/equipments/[id]/edit',
+];
+
+const ACTION_FILES = [
+  'app/(app)/equipments/[id]/request/actions.ts',
+  'app/(app)/admin/requests/[id]/actions.ts',
+  'app/(app)/admin/equipments/actions.ts',
 ];
 
 describe('route segments', () => {
@@ -60,8 +71,8 @@ describe('client/server boundaries', () => {
     expect(offenders).toEqual([]);
   });
 
-  it("actions.ts starts with 'use server' and exports only async functions", () => {
-    const file = path.join(ROOT, 'app/(app)/equipments/[id]/request/actions.ts');
+  it.each(ACTION_FILES)("%s starts with 'use server' and exports only async functions", (relative) => {
+    const file = path.join(ROOT, relative);
     expect(startsWithDirective(file, 'use server')).toBe(true);
     const exports = readFileSync(file, 'utf8')
       .split('\n')

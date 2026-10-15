@@ -1,4 +1,4 @@
-import type { AuditLog, RequestStatus } from '@app/shared';
+import type { AuditLog, EquipmentStatus, RequestStatus } from '@app/shared';
 
 const DATE_TIME = new Intl.DateTimeFormat('th-TH-u-ca-gregory', {
   dateStyle: 'medium',
@@ -15,6 +15,11 @@ export const STATUS_LABEL: Record<RequestStatus, string> = {
   PENDING: 'รออนุมัติ',
   APPROVED: 'อนุมัติแล้ว',
   REJECTED: 'ปฏิเสธ',
+};
+
+export const EQUIPMENT_STATUS_LABEL: Record<EquipmentStatus, string> = {
+  ACTIVE: 'เปิดใช้งาน',
+  INACTIVE: 'ปิดใช้งาน',
 };
 
 export function describeAuditEntry(entry: AuditLog): string {

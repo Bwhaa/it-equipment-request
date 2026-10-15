@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { isActivePath } from '@/lib/active-path';
 
 export function NavLink({ href, children }: { href: string; children: ReactNode }) {
   const pathname = usePathname();
-  const active = pathname === href || pathname.startsWith(`${href}/`);
+  const active = isActivePath(pathname, href);
 
   return (
     <Link

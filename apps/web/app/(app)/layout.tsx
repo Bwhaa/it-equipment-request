@@ -12,7 +12,10 @@ const NAV: Record<Role, { href: string; label: string }[]> = {
     { href: '/equipments', label: 'อุปกรณ์' },
     { href: '/requests', label: 'คำขอของฉัน' },
   ],
-  ADMIN: [{ href: '/admin/requests', label: 'คำขอทั้งหมด' }],
+  ADMIN: [
+    { href: '/admin/requests', label: 'คำขอทั้งหมด' },
+    { href: '/admin/equipments', label: 'จัดการอุปกรณ์' },
+  ],
 };
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

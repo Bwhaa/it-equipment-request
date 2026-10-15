@@ -110,6 +110,9 @@
 - Client-side validation must never be stricter than the server and must not decide business rules the API owns (for example, the stock check is a soft check made by the API: quantities above the stock are allowed to reach it).
 - Dates are shown with `formatDateTime` in `lib/format.ts` (Asia/Bangkok, Gregorian years) so server and client render the same text.
 - Pages with a `loading.tsx` stream, so `notFound()` renders the not-found content with HTTP 200 (verified on the production build). Authorization and 404 semantics are enforced and tested at the API level (e2e); do not assert a 404 status for web pages.
+- Admin edit forms send the `version` they loaded. On `VERSION_CONFLICT` the Server Action refetches the item and returns the latest values; the form re-keys on the latest version, shows the latest values and what the user tried to save. Never retry silently.
+- After a 409/404 from approve or reject the Server Action calls `revalidatePath` for the detail and list pages so the next render shows fresh stock and status. The stock in a request response is the CURRENT stock (after any approvals), never the stock before a decision: label it 'คงเหลือปัจจุบัน'.
+- Every id taken from a form or URL passes `isUuid()` before it is placed in an API path.
 
 ## Testing
 - e2e uses the `it_equipment_test` database (`apps/api/.env.test`, committed, no secrets).

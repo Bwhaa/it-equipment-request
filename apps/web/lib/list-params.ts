@@ -1,4 +1,4 @@
-import type { RequestStatus } from '@app/shared';
+import type { EquipmentStatus, RequestStatus } from '@app/shared';
 
 export type SearchParamValue = string | string[] | undefined;
 
@@ -22,6 +22,17 @@ export const parseCategory = (value: SearchParamValue): string | undefined => pa
 export function parseRequestStatus(value: SearchParamValue): RequestStatus | undefined {
   const raw = first(value);
   return raw === 'PENDING' || raw === 'APPROVED' || raw === 'REJECTED' ? raw : undefined;
+}
+
+export type RequestSort = 'createdAt:desc' | 'createdAt:asc';
+
+export function parseSort(value: SearchParamValue): RequestSort {
+  return first(value) === 'createdAt:asc' ? 'createdAt:asc' : 'createdAt:desc';
+}
+
+export function parseEquipmentStatus(value: SearchParamValue): EquipmentStatus | undefined {
+  const raw = first(value);
+  return raw === 'ACTIVE' || raw === 'INACTIVE' ? raw : undefined;
 }
 
 /** `page` is omitted when it is 1; undefined and empty params are dropped. */

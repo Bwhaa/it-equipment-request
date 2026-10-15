@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { buildHref, parseCategory, parsePage, parseRequestStatus, parseSearch } from '@/lib/list-params';
+import {
+  buildHref,
+  parseCategory,
+  parseEquipmentStatus,
+  parsePage,
+  parseRequestStatus,
+  parseSearch,
+  parseSort,
+} from '@/lib/list-params';
 
 describe('parsePage', () => {
   it.each([
@@ -69,5 +77,45 @@ describe('buildHref', () => {
   it('encodes values', () => {
     expect(buildHref('/equipments', { category: 'Input Device' }, 1)).toBe('/equipments?category=Input+Device');
     expect(buildHref('/equipments', { search: '%' }, 1)).toBe('/equipments?search=%25');
+  });
+});
+
+describe('parseSort', () => {
+  it.each([
+    ['createdAt:asc', 'createdAt:asc'],
+    ['createdAt:desc', 'createdAt:desc'],
+    ['foo', 'createdAt:desc'],
+    ['', 'createdAt:desc'],
+    ['CREATEDAT:ASC', 'createdAt:desc'],
+    [undefined, 'createdAt:desc'],
+    [['createdAt:asc', 'x'], 'createdAt:asc'],
+    [['foo', 'createdAt:asc'], 'createdAt:desc'],
+  ])('%j -> %j', (input, expected) => {
+    expect(parseSort(input)).toBe(expected);
+  });
+});
+
+describe('parseEquipmentStatus', () => {
+  it.each(['ACTIVE', 'INACTIVE'])('accepts %s', (value) => {
+    expect(parseEquipmentStatus(value)).toBe(value);
+  });
+
+  it.each([['BROKEN'], [''], ['active'], [undefined], [['BROKEN', 'ACTIVE']]])('ignores %j', (value) => {
+    expect(parseEquipmentStatus(value)).toBeUndefined();
+  });
+
+  it('uses the first value of an array', () => {
+    expect(parseEquipmentStatus(['INACTIVE', 'ACTIVE'])).toBe('INACTIVE');
+  });
+});
+
+describe('buildHref with admin filters', () => {
+  it('keeps sort, search, status and category and drops page 1', () => {
+    expect(buildHref('/admin/requests', { status: 'PENDING', search: 'monitor', sort: 'createdAt:asc' }, 1)).toBe(
+      '/admin/requests?status=PENDING&search=monitor&sort=createdAt%3Aasc',
+    );
+    expect(buildHref('/admin/equipments', { search: 'x', category: 'Input Device', status: 'INACTIVE' }, 2)).toBe(
+      '/admin/equipments?search=x&category=Input+Device&status=INACTIVE&page=2',
+    );
   });
 });

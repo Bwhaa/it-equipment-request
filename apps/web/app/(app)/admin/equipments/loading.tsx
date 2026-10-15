@@ -1,0 +1,13 @@
+import { Skeleton } from '@/components/ui/skeleton';
+
+export default function Loading() {
+  return (
+    <div aria-busy="true" aria-label="กำลังโหลด" className="space-y-3">
+      <Skeleton className="h-6 w-40" />
+      <Skeleton className="h-10 w-full" />
+      {Array.from({ length: 8 }, (_, index) => (
+        <Skeleton key={index} className="h-10 w-full" />
+      ))}
+    </div>
+  );
+}
