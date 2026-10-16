@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { EquipmentRequest, Paginated, RequestStatus } from '@app/shared';
 import Link from 'next/link';
 import { Badge, StatusBadge } from '@/components/ui/badge';
@@ -10,6 +11,8 @@ import { STATUS_LABEL, formatDateTime } from '@/lib/format';
 import { buildHref, parsePage, parseRequestStatus, parseSearch, parseSort } from '@/lib/list-params';
 import type { SearchParamValue } from '@/lib/list-params';
 import { FILTER_INPUT_CLASS } from '@/lib/ui-classes';
+
+export const metadata: Metadata = { title: 'คำขอทั้งหมด' };
 
 const PAGE_SIZE = 10;
 const BASE_PATH = '/admin/requests';

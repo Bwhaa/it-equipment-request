@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { EquipmentRequest, Paginated, RequestStatus } from '@app/shared';
 import Link from 'next/link';
 import { StatusBadge } from '@/components/ui/badge';
@@ -7,6 +8,8 @@ import { apiFetch } from '@/lib/api';
 import { STATUS_LABEL, formatDateTime } from '@/lib/format';
 import { buildHref, parsePage, parseRequestStatus } from '@/lib/list-params';
 import type { SearchParamValue } from '@/lib/list-params';
+
+export const metadata: Metadata = { title: 'คำขอของฉัน' };
 
 const PAGE_SIZE = 5;
 const TABS: { label: string; status: RequestStatus | undefined }[] = [

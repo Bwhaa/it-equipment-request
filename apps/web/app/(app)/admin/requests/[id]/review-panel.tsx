@@ -71,7 +71,7 @@ export function ReviewPanel({ id, block, reviewed }: { id: string; block: Approv
                   {reasonLength}/500
                 </p>
                 {reasonError && (
-                  <p id="reason-error" className="mt-1 text-sm text-red-700">
+                  <p id="reason-error" className="mt-1 text-sm text-red-700 dark:text-red-400">
                     {reasonError}
                   </p>
                 )}

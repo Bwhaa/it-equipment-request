@@ -78,7 +78,7 @@ export function EquipmentForm({ mode, initial }: Props) {
   const describe = (field: keyof EquipmentFormFieldErrors) => (fieldErrors[field] ? `${field}-error` : undefined);
   const error = (field: keyof EquipmentFormFieldErrors) =>
     fieldErrors[field] && (
-      <p id={`${field}-error`} className="mt-1 text-sm text-red-700">
+      <p id={`${field}-error`} className="mt-1 text-sm text-red-700 dark:text-red-400">
         {fieldErrors[field]}
       </p>
     );

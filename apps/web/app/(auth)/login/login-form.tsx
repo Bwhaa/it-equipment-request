@@ -93,7 +93,7 @@ export function LoginForm() {
           className={FORM_INPUT_CLASS}
         />
         {emailError && (
-          <p id="email-error" className="mt-1 text-sm text-red-700">
+          <p id="email-error" className="mt-1 text-sm text-red-700 dark:text-red-400">
             {emailError}
           </p>
         )}
@@ -113,7 +113,7 @@ export function LoginForm() {
           className={FORM_INPUT_CLASS}
         />
         {passwordError && (
-          <p id="password-error" className="mt-1 text-sm text-red-700">
+          <p id="password-error" className="mt-1 text-sm text-red-700 dark:text-red-400">
             {passwordError}
           </p>
         )}

@@ -67,7 +67,7 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
           คงเหลือ {stockQuantity} ชิ้น
         </p>
         {fieldErrors.quantity && (
-          <p id="quantity-error" className="mt-1 text-sm text-red-700">
+          <p id="quantity-error" className="mt-1 text-sm text-red-700 dark:text-red-400">
             {fieldErrors.quantity}
           </p>
         )}
@@ -91,7 +91,7 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
           {reasonLength}/500
         </p>
         {fieldErrors.reason && (
-          <p id="reason-error" className="mt-1 text-sm text-red-700">
+          <p id="reason-error" className="mt-1 text-sm text-red-700 dark:text-red-400">
             {fieldErrors.reason}
           </p>
         )}

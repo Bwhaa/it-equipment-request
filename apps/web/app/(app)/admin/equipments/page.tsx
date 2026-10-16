@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { Equipment, Paginated } from '@app/shared';
 import Link from 'next/link';
 import { Alert } from '@/components/ui/alert';
@@ -10,6 +11,8 @@ import { EQUIPMENT_STATUS_LABEL } from '@/lib/format';
 import { buildHref, parseCategory, parseEquipmentStatus, parsePage, parseSearch } from '@/lib/list-params';
 import type { SearchParamValue } from '@/lib/list-params';
 import { FILTER_INPUT_CLASS } from '@/lib/ui-classes';
+
+export const metadata: Metadata = { title: 'จัดการอุปกรณ์' };
 
 const PAGE_SIZE = 10;
 const BASE_PATH = '/admin/equipments';

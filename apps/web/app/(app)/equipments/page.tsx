@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { Equipment, Paginated } from '@app/shared';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,8 @@ import { apiFetch } from '@/lib/api';
 import { buildHref, parseCategory, parsePage, parseSearch } from '@/lib/list-params';
 import type { SearchParamValue } from '@/lib/list-params';
 import { FILTER_INPUT_CLASS } from '@/lib/ui-classes';
+
+export const metadata: Metadata = { title: 'รายการอุปกรณ์' };
 
 const PAGE_SIZE = 6;
 

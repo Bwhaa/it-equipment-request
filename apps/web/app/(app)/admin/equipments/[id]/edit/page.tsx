@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { Equipment } from '@app/shared';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -5,6 +6,8 @@ import { apiFetch } from '@/lib/api';
 import { ApiRequestError } from '@/lib/api-error';
 import { isUuid } from '@/lib/roles';
 import { EquipmentForm } from '../../equipment-form';
+
+export const metadata: Metadata = { title: 'แก้ไขอุปกรณ์' };
 
 /** Returns null on 404; every other error propagates. */
 async function loadEquipment(id: string): Promise<Equipment | null> {
