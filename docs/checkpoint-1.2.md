@@ -61,6 +61,7 @@ erDiagram
         enum status "PENDING | APPROVED | REJECTED"
         text reject_reason "nullable"
         uuid reviewed_by_id FK "nullable"
+        uuid idempotency_key "nullable, UNIQUE with requester_id"
         timestamptz reviewed_at "nullable"
         timestamptz approved_at "nullable"
         timestamptz created_at
@@ -108,6 +109,7 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 | `requests(status, created_at DESC)` | Admin กรองสถานะ + เรียงใหม่สุด + pagination |
 | `requests(requester_id, created_at DESC)` | ประวัติคำขอของฉัน |
 | `requests(equipment_id)` | join / ค้นหาตามอุปกรณ์ |
+| `requests(requester_id, idempotency_key)` UNIQUE | กันสร้างคำขอซ้ำจากการส่งซ้ำ (key เป็น NULL ได้ ซ้ำได้) |
 | `audit_logs(request_id, created_at)` | timeline ของคำขอ |
 | `equipments(status)` | รายการอุปกรณ์ฝั่ง Employee |
 | `equipments(lower(btrim(name)))` UNIQUE | ชื่ออุปกรณ์ห้ามซ้ำ (ไม่สนตัวพิมพ์ใหญ่เล็กและช่องว่างหัวท้าย รวมรายการที่ปิดใช้งาน); Prisma ไม่รู้จัก index แบบนี้ จึงสร้างด้วย SQL ใน migration |
@@ -176,7 +178,7 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 
 | Method | Path | Role | Body / Query | Response |
 | --- | --- | --- | --- | --- |
-| POST | `/requests` | EMPLOYEE | `{ equipmentId, quantity, reason }` | `201 Request` (status `PENDING`) / `422` ถ้า stock 0 หรือ quantity > stock / 404 ถ้าอุปกรณ์ไม่มีหรือ INACTIVE |
+| POST | `/requests` | EMPLOYEE | `{ equipmentId, quantity, reason }` + header `Idempotency-Key` (UUID, ไม่บังคับ) | `201 Request` (status `PENDING`) / `422` ถ้า stock 0 หรือ quantity > stock / 404 ถ้าอุปกรณ์ไม่มีหรือ INACTIVE / `200` (ส่งซ้ำด้วย key เดิม พร้อม header `Idempotent-Replayed: true`) / `422 IDEMPOTENCY_KEY_REUSED` |
 | GET | `/requests/me` | EMPLOYEE | `?status&page&limit` | `200 Paginated<Request>` เฉพาะของตัวเอง |
 | GET | `/requests` | ADMIN | `?status&search&page&limit&sort` | `200 Paginated<Request>` — `search` หาในชื่ออุปกรณ์ OR ชื่อผู้ขอ |
 | GET | `/requests/:id` | Any (+ ownership) | — | `200 RequestDetail` (รวม `auditLogs[]`) / `404` |
@@ -186,6 +188,8 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 `/requests/me` ต้องประกาศก่อน `/requests/:id` ใน controller ไม่งั้น `me` จะถูกจับเป็น `:id` (แต่ `ParseUUIDPipe` ก็กันได้อีกชั้น)
 
 **พฤติกรรมของ list/detail:** `/requests/me` และ `/requests` เรียง `createdAt` จากใหม่ไปเก่าเป็นค่าเริ่มต้น (ตามด้วย `id`; Admin เปลี่ยนได้ด้วย `sort=createdAt:asc`); `/requests/me` รับเฉพาะ `status`, `page`, `limit` (ส่ง `search` → 400); `search` ของ `/requests` เป็น contains ไม่สนตัวพิมพ์บนชื่ออุปกรณ์หรือชื่อผู้ขอ และ `%` `_` `\` เป็นตัวอักษรธรรมดา; `/requests/:id` คืน `auditLogs` เรียงเก่าไปใหม่; `POST /requests` เช็ก stock แบบ soft check (ไม่หัก stock): `quantity` เท่ากับ stock ได้ และคำขอ PENDING หลายใบรวมกันเกิน stock ได้
+
+**Idempotency:** ส่ง header `Idempotency-Key` (UUID) มากับ `POST /requests` เพื่อกันคำขอซ้ำ: key เดิม + ข้อมูลเดิม (equipmentId, quantity, reason หลัง trim) → คืนคำขอเดิม (200, ไม่สร้างแถว ไม่เขียน audit log); key เดิม + ข้อมูลต่าง → 422 `IDEMPOTENCY_KEY_REUSED`; ไม่ส่ง header → ทำงานเหมือนเดิม; unique ต่อผู้ขอ `(requester_id, idempotency_key)` ที่ฐานข้อมูล; การค้นหา key เกิดก่อนตรวจ stock จึง replay ได้แม้ stock หมดแล้ว; key ไม่ถูกส่งออกใน response; ไม่มีวันหมดอายุของ key
 
 ### 4.4 Validation (DTO)
 
@@ -382,6 +386,7 @@ FE เจอ `409 VERSION_CONFLICT` → refetch แล้วแสดงค่�
 | 409 | อุปกรณ์ถูกปิดใช้งานตอน approve | `EQUIPMENT_INACTIVE` |
 | 409 | `version` ไม่ตรงตอนแก้อุปกรณ์ | `VERSION_CONFLICT` |
 | 409 | ชื่ออุปกรณ์ซ้ำกับรายการอื่น (ไม่สนตัวพิมพ์ใหญ่เล็กและช่องว่างหัวท้าย รวมรายการที่ปิดใช้งาน) | `DUPLICATE_EQUIPMENT_NAME` |
+| 422 | ใช้ Idempotency-Key เดิมกับข้อมูลที่ต่างจากเดิม | `IDEMPOTENCY_KEY_REUSED` |
 | 422 | สร้างคำขอกับอุปกรณ์ที่ stock 0 / quantity เกิน stock | `EQUIPMENT_UNAVAILABLE` |
 | 429 | login ล้มเหลวเกินกำหนด (มี header `Retry-After`) | `TOO_MANY_REQUESTS` |
 | 500 | error ที่ไม่ได้คาดไว้ (message กลางๆ ไม่ส่ง stack ให้ client, log ฝั่ง server พร้อม request id) | `INTERNAL_ERROR` |

@@ -32,6 +32,7 @@ erDiagram
     enum status "PENDING, APPROVED, REJECTED"
     text reject_reason "required if REJECTED"
     uuid reviewed_by_id FK "nullable"
+    uuid idempotency_key "nullable, UNIQUE with requester_id"
     timestamptz reviewed_at "nullable"
     timestamptz approved_at "nullable"
     timestamptz created_at
