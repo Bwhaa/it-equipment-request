@@ -19,7 +19,6 @@ const NOT_YET_MIGRATED: string[] = [
   'app/(app)/equipments/[id]/request/page.tsx',
   'app/(app)/equipments/[id]/request/request-form.tsx',
   'app/(app)/equipments/page.tsx',
-  'app/(app)/layout.tsx',
   'app/(app)/loading.tsx',
   'app/(app)/not-found.tsx',
   'app/(app)/requests/[id]/page.tsx',

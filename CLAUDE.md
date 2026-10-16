@@ -125,6 +125,7 @@
 - Admin edit forms send the `version` they loaded. On `VERSION_CONFLICT` the Server Action refetches the item and returns the latest values; the form re-keys on the latest version, shows the latest values and what the user tried to save. Never retry silently.
 - After a 409/404 from approve or reject the Server Action calls `revalidatePath` for the detail and list pages so the next render shows fresh stock and status. The stock in a request response is the CURRENT stock (after any approvals), never the stock before a decision: label it 'คงเหลือปัจจุบัน'.
 - Every id taken from a form or URL passes `isUuid()` before it is placed in an API path.
+- The UI follows `docs/ui-design.md`: semantic tokens only (no raw palette classes in `app/` or `components/`; `ui-class-scan.test.ts` enforces it), Noto Sans Thai is bundled with `@fontsource-variable/noto-sans-thai` (never `next/font`), controls are at least 44px (primary controls and fields 48px), mobile first with `md:` as the only layout breakpoint, and the navigation is ONE `<nav>` that becomes a bottom tab bar below `md`.
 
 ## Testing
 - e2e uses the `it_equipment_test` database (`apps/api/.env.test`, committed, no secrets).
@@ -137,6 +138,7 @@
 - Never delete or skip (`.skip`, `xit`) an existing test to make the gate pass.
 - Web unit tests use vitest in the node environment (`apps/web/test`); `pnpm test` runs them together with the API unit tests. Pages and components are verified with the curl smoke checks in the task acceptance.
 - Web UI states are covered by `renderToString` snapshot tests in `apps/web/test`. A snapshot change must be reviewed in the commit that causes it; a refactor commit must leave every snapshot untouched.
+- A restyle commit must leave the DOM structure of every snapshot unchanged: compare snapshots with `class` attributes stripped (script in the task report); structure changes need an explicit reason in the commit message.
 
 ## Workflow
 - Do only the current task's scope. Found something outside it? List it under

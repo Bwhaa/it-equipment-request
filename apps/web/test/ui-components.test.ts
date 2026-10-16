@@ -161,4 +161,11 @@ describe('NavLink', () => {
     expect(inactive).not.toContain('aria-current');
     expect([active, inactive]).toMatchSnapshot();
   });
+
+  it('without an icon it renders no icon wrapper; with one it adds an aria-hidden md:hidden wrapper before the label', () => {
+    const plain = render(createElement(NavLink, { href: '/equipments', children: 'อุปกรณ์' }));
+    const withIcon = render(createElement(NavLink, { href: '/equipments', children: 'อุปกรณ์', icon: createElement('svg') }));
+    expect(plain).not.toContain('md:hidden');
+    expect(withIcon).toContain('<span aria-hidden="true" class="md:hidden"><svg></svg></span>อุปกรณ์');
+  });
 });
