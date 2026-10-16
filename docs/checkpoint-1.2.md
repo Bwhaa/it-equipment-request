@@ -189,7 +189,7 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 
 **พฤติกรรมของ list/detail:** `/requests/me` และ `/requests` เรียง `createdAt` จากใหม่ไปเก่าเป็นค่าเริ่มต้น (ตามด้วย `id`; Admin เปลี่ยนได้ด้วย `sort=createdAt:asc`); `/requests/me` รับเฉพาะ `status`, `page`, `limit` (ส่ง `search` → 400); `search` ของ `/requests` เป็น contains ไม่สนตัวพิมพ์บนชื่ออุปกรณ์หรือชื่อผู้ขอ และ `%` `_` `\` เป็นตัวอักษรธรรมดา; `/requests/:id` คืน `auditLogs` เรียงเก่าไปใหม่; `POST /requests` เช็ก stock แบบ soft check (ไม่หัก stock): `quantity` เท่ากับ stock ได้ และคำขอ PENDING หลายใบรวมกันเกิน stock ได้
 
-**Idempotency:** ส่ง header `Idempotency-Key` (UUID) มากับ `POST /requests` เพื่อกันคำขอซ้ำ: key เดิม + ข้อมูลเดิม (equipmentId, quantity, reason หลัง trim) → คืนคำขอเดิม (200, ไม่สร้างแถว ไม่เขียน audit log); key เดิม + ข้อมูลต่าง → 422 `IDEMPOTENCY_KEY_REUSED`; ไม่ส่ง header → ทำงานเหมือนเดิม; unique ต่อผู้ขอ `(requester_id, idempotency_key)` ที่ฐานข้อมูล; การค้นหา key เกิดก่อนตรวจ stock จึง replay ได้แม้ stock หมดแล้ว; key ไม่ถูกส่งออกใน response; ไม่มีวันหมดอายุของ key
+**Idempotency:** ส่ง header `Idempotency-Key` (UUID) มากับ `POST /requests` เพื่อกันคำขอซ้ำ: key เดิม + ข้อมูลเดิม (equipmentId, quantity, reason หลัง trim) → คืนคำขอเดิม (200, ไม่สร้างแถว ไม่เขียน audit log); key เดิม + ข้อมูลต่าง → 422 `IDEMPOTENCY_KEY_REUSED`; ไม่ส่ง header → ทำงานเหมือนเดิม; unique ต่อผู้ขอ `(requester_id, idempotency_key)` ที่ฐานข้อมูล; การค้นหา key เกิดก่อนตรวจ stock จึง replay ได้แม้ stock หมดแล้ว; key ไม่ถูกส่งออกใน response; ไม่มีวันหมดอายุของ key ฝั่งเว็บสร้าง key ใหม่ทุกครั้งที่โหลดหน้าฟอร์ม จึงกันการส่งฟอร์มเดิมซ้ำเท่านั้น (การโหลดหน้าใหม่หรือกด Back แล้วส่งถือเป็นคำขอใหม่)
 
 ### 4.4 Validation (DTO)
 

@@ -26,7 +26,7 @@ export default async function RequestEquipmentPage({ params }: { params: Promise
   if (!isUuid(id)) notFound();
   const equipment = await loadEquipment(id);
   if (!equipment) notFound();
-  // A new key per render: one page load = one logical request (a double submit or "back and submit again" reuses it).
+  // A new key per render: one page load = one logical request (re-submitting the SAME rendered form reuses it; reloading or Back renders a new key).
   const idempotencyKey = randomUUID();
 
   return (
