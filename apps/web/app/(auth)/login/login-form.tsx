@@ -72,6 +72,8 @@ export function LoginForm() {
     'w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
 
   return (
+    // The inputs deliberately have no `name`: a native submit before hydration (or without JS) is a GET that
+    // would put the credentials in the URL; without names it sends nothing. The state below holds the values.
     <form onSubmit={onSubmit} noValidate className="space-y-4">
       {banner && (
         <p role="alert" className="rounded border border-red-400 bg-red-50 p-2 text-sm text-red-800">
@@ -84,7 +86,6 @@ export function LoginForm() {
         </label>
         <input
           id="email"
-          name="email"
           type="email"
           autoComplete="username"
           value={email}
@@ -105,7 +106,6 @@ export function LoginForm() {
         </label>
         <input
           id="password"
-          name="password"
           type="password"
           autoComplete="current-password"
           value={password}
