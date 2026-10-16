@@ -15,7 +15,7 @@ erDiagram
   }
   EQUIPMENTS {
     uuid id PK
-    varchar name
+    varchar name "UNIQUE lower(btrim(name))"
     varchar category
     int stock_quantity "CHECK >= 0"
     enum status "ACTIVE, INACTIVE (default ACTIVE)"

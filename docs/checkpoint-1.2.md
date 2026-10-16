@@ -43,7 +43,7 @@ erDiagram
 
     EQUIPMENTS {
         uuid id PK
-        varchar name
+        varchar name "UNIQUE lower(btrim(name))"
         varchar category
         int stock_quantity "CHECK >= 0"
         enum status "ACTIVE | INACTIVE"
@@ -110,6 +110,7 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 | `requests(equipment_id)` | join / ค้นหาตามอุปกรณ์ |
 | `audit_logs(request_id, created_at)` | timeline ของคำขอ |
 | `equipments(status)` | รายการอุปกรณ์ฝั่ง Employee |
+| `equipments(lower(btrim(name)))` UNIQUE | ชื่ออุปกรณ์ห้ามซ้ำ (ไม่สนตัวพิมพ์ใหญ่เล็กและช่องว่างหัวท้าย รวมรายการที่ปิดใช้งาน); Prisma ไม่รู้จัก index แบบนี้ จึงสร้างด้วย SQL ใน migration |
 
 ค้นหาด้วย `ILIKE` บนชื่ออุปกรณ์/ชื่อผู้ขอเพียงพอสำหรับขนาดข้อมูลนี้; ถ้าโตมากค่อยเพิ่ม `pg_trgm` GIN index
 
@@ -166,8 +167,8 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 | GET | `/equipments` | Any | `?search&category&status&page&limit` | `200 Paginated<Equipment>` — Employee ได้เฉพาะ `ACTIVE` (server บังคับ, ไม่สน `status` query) |
 | GET | `/equipments/categories` | Any | — | `200 string[]` (distinct category, ใช้ทำ dropdown กรอง) — Employee ได้เฉพาะหมวดของอุปกรณ์ที่ ACTIVE, Admin ได้ทุกหมวด |
 | GET | `/equipments/:id` | Any | — | `200 Equipment` / `404` (Employee เห็น INACTIVE → 404) |
-| POST | `/equipments` | ADMIN | `{ name, category, stockQuantity, status? }` | `201 Equipment` |
-| PATCH | `/equipments/:id` | ADMIN | `{ version, name?, category?, stockQuantity?, status? }` — **`version` บังคับ** | `200 Equipment` / `409 VERSION_CONFLICT` ถ้ามีคนแก้หรือ approve ไปก่อน |
+| POST | `/equipments` | ADMIN | `{ name, category, stockQuantity, status? }` | `201 Equipment` / `409 DUPLICATE_EQUIPMENT_NAME` |
+| PATCH | `/equipments/:id` | ADMIN | `{ version, name?, category?, stockQuantity?, status? }` — **`version` บังคับ** | `200 Equipment` / `409 VERSION_CONFLICT` ถ้ามีคนแก้หรือ approve ไปก่อน หรือ `409 DUPLICATE_EQUIPMENT_NAME` ถ้าชื่อซ้ำกับอุปกรณ์อื่น |
 
 **พฤติกรรมของ list:** เรียงตาม `name` จากน้อยไปมาก แล้วตาม `id` เสมอ (pagination คงที่); `category` ตรงตัวทั้งคำ (ตัวพิมพ์ใหญ่เล็กมีผล); `search` เป็น contains ไม่สนตัวพิมพ์ และตัวอักษร `%` `_` `\` ถูกตีเป็นตัวอักษรธรรมดา (`escapeLike`); `/equipments/categories` เรียงจากน้อยไปมาก; Employee ที่ส่ง `status` มา → ไม่มีผล (บังคับ ACTIVE)
 
@@ -380,6 +381,7 @@ FE เจอ `409 VERSION_CONFLICT` → refetch แล้วแสดงค่�
 | 409 | stock ไม่พอตอน approve | `INSUFFICIENT_STOCK` |
 | 409 | อุปกรณ์ถูกปิดใช้งานตอน approve | `EQUIPMENT_INACTIVE` |
 | 409 | `version` ไม่ตรงตอนแก้อุปกรณ์ | `VERSION_CONFLICT` |
+| 409 | ชื่ออุปกรณ์ซ้ำกับรายการอื่น (ไม่สนตัวพิมพ์ใหญ่เล็กและช่องว่างหัวท้าย รวมรายการที่ปิดใช้งาน) | `DUPLICATE_EQUIPMENT_NAME` |
 | 422 | สร้างคำขอกับอุปกรณ์ที่ stock 0 / quantity เกิน stock | `EQUIPMENT_UNAVAILABLE` |
 | 429 | login ล้มเหลวเกินกำหนด (มี header `Retry-After`) | `TOO_MANY_REQUESTS` |
 | 500 | error ที่ไม่ได้คาดไว้ (message กลางๆ ไม่ส่ง stack ให้ client, log ฝั่ง server พร้อม request id) | `INTERNAL_ERROR` |
