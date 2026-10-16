@@ -60,8 +60,9 @@ pnpm --filter api test:e2e
 
 `test:e2e` ต้องมี db container รันอยู่ (`docker compose up -d db`); ฐานข้อมูล `it_equipment_test` ถูกสร้างอัตโนมัติ และชุดทดสอบจะไม่ยอมรันบนฐานข้อมูลที่ชื่อไม่ลงท้ายด้วย `_test`
 
-ชุดทดสอบพิสูจน์: ตาราง RBAC ของทุก route (และทุก route ต้องประกาศสิทธิ์ชัดเจน), การ rollback ของ transaction เมื่อบันทึก audit log ไม่สำเร็จ,
-การอนุมัติพร้อมกันหลายคำขอที่ไม่ทำให้สต็อกติดลบ, และ `VERSION_CONFLICT` ของการแก้ไขอุปกรณ์ (optimistic locking)
+ชุดทดสอบพิสูจน์: ตาราง RBAC ของทุก route (และทุก route ต้องประกาศสิทธิ์ชัดเจน), การ rollback ทั้ง transaction ของ approve / reject / create เมื่อบันทึก audit log ไม่สำเร็จ (`rollback.e2e-spec.ts`),
+การอนุมัติพร้อมกัน เช่น สต็อก 4 กับ 10 คำขอ → อนุมัติได้ 4 และสต็อกไม่ติดลบ (`concurrency.e2e-spec.ts`),
+และ `VERSION_CONFLICT` เมื่อ PATCH อุปกรณ์ด้วย version เก่าหรือพร้อมกัน (`concurrency.e2e-spec.ts`, `equipments.e2e-spec.ts`)
 
 ## 7. โครงสร้างโปรเจกต์
 
@@ -74,23 +75,23 @@ docs/            checkpoint-1.2.md, erDiagram.txt, erd.png
 
 เอกสาร: [docs/checkpoint-1.2.md](docs/checkpoint-1.2.md) · [docs/erDiagram.txt](docs/erDiagram.txt) · [docs/erd.png](docs/erd.png)
 
-## 8. API endpoints (prefix `/api/v1`)
+## 8. API endpoints
 
 | Method | Path | Role |
 | --- | --- | --- |
-| POST | `/auth/login` | Public |
-| GET | `/auth/me` | EMPLOYEE, ADMIN |
-| GET | `/equipments` | EMPLOYEE, ADMIN |
-| GET | `/equipments/categories` | EMPLOYEE, ADMIN |
-| GET | `/equipments/:id` | EMPLOYEE, ADMIN |
-| POST | `/equipments` | ADMIN |
-| PATCH | `/equipments/:id` | ADMIN |
-| POST | `/requests` | EMPLOYEE |
-| GET | `/requests/me` | EMPLOYEE |
-| GET | `/requests` | ADMIN |
-| GET | `/requests/:id` | EMPLOYEE (เฉพาะของตัวเอง), ADMIN |
-| PATCH | `/requests/:id/approve` | ADMIN |
-| PATCH | `/requests/:id/reject` | ADMIN |
+| POST | `/api/v1/auth/login` | Public |
+| GET | `/api/v1/auth/me` | EMPLOYEE, ADMIN |
+| GET | `/api/v1/equipments` | EMPLOYEE, ADMIN |
+| GET | `/api/v1/equipments/categories` | EMPLOYEE, ADMIN |
+| GET | `/api/v1/equipments/:id` | EMPLOYEE, ADMIN |
+| POST | `/api/v1/equipments` | ADMIN |
+| PATCH | `/api/v1/equipments/:id` | ADMIN |
+| POST | `/api/v1/requests` | EMPLOYEE |
+| GET | `/api/v1/requests/me` | EMPLOYEE |
+| GET | `/api/v1/requests` | ADMIN |
+| GET | `/api/v1/requests/:id` | EMPLOYEE (เฉพาะของตัวเอง), ADMIN |
+| PATCH | `/api/v1/requests/:id/approve` | ADMIN |
+| PATCH | `/api/v1/requests/:id/reject` | ADMIN |
 
 ## 9. Git workflow
 
@@ -100,8 +101,8 @@ docs/            checkpoint-1.2.md, erDiagram.txt, erd.png
 ## 10. ข้อจำกัดที่รู้
 
 - Login rate limit เก็บในหน่วยความจำ: แยกต่อ instance และหายเมื่อ restart
-- การจำกัดต่อ IP ปิดอยู่ จะทำงานเมื่อตั้ง `TRUST_PROXY` หลัง reverse proxy ที่เชื่อถือได้และเขียนทับ `X-Forwarded-For` เท่านั้น (ตัวป้องกันหลักคือการจำกัดต่อ email)
-- JWT อายุ 1 ชั่วโมงและไม่มี refresh token
+- การจำกัดต่อ IP ปิดอยู่ จะทำงานเมื่อตั้ง `TRUST_PROXY` **และ** request มี `X-Forwarded-For` หลัง reverse proxy ที่เชื่อถือได้และเขียนทับ `X-Forwarded-For` เท่านั้น (ตัวป้องกันหลักคือการจำกัดต่อ email)
+- JWT อายุเริ่มต้น 1 ชั่วโมง (ตั้งได้ด้วย `JWT_EXPIRES_IN`) และ cookie ของ web หมดอายุที่ 1 ชั่วโมงเสมอ; ไม่มี refresh token
 - หน้าเว็บที่เรียก `notFound()` ตอบ HTTP 200 เพราะมี `loading.tsx` (semantics แบบ 404 บังคับใช้และทดสอบที่ API)
 - ไม่มี browser (UI) automation test: พฤติกรรม UI ตรวจด้วย unit test และ curl กับ production build
 - ใช้ Tailwind component ธรรมดา (ไม่มี UI library)
