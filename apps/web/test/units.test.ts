@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import { isApiError, makeApiError } from '@/lib/api-error';
 import { getApiUrl, getJwtSecretKey, isCookieSecure } from '@/lib/env';
@@ -117,5 +119,33 @@ describe('roles', () => {
     expect(isUuid('a0000000-0000-4000-8000-000000000001')).toBe(true);
     expect(isUuid('not-a-uuid')).toBe(false);
     expect(isUuid(5)).toBe(false);
+  });
+});
+
+const placeholderFromEnvExample = (): string => {
+  const text = readFileSync(fileURLToPath(new URL('../../../.env.example', import.meta.url)), 'utf8');
+  const line = text.split('\n').find((candidate) => candidate.startsWith('JWT_SECRET='));
+  return (line ?? '').slice('JWT_SECRET='.length).trim();
+};
+
+describe('placeholder JWT_SECRET (must stay identical to apps/api/src/auth/auth.config.ts)', () => {
+  it('getJwtSecretKey rejects the value shipped in .env.example', () => {
+    const placeholder = placeholderFromEnvExample();
+    expect(placeholder.length).toBeGreaterThanOrEqual(32);
+    process.env.JWT_SECRET = placeholder;
+    expect(() => getJwtSecretKey()).toThrow(/JWT_SECRET/);
+    expect(() => getJwtSecretKey()).toThrow(/placeholder/);
+  });
+
+  it.each([['CHANGE-ME-'], ['change_me_'], ['changeme'], ['replace-me-'], [' change-me-']])('rejects the prefix %j', (prefix) => {
+    process.env.JWT_SECRET = `${prefix}${'x'.repeat(40)}`;
+    expect(() => getJwtSecretKey()).toThrow(/JWT_SECRET/);
+  });
+
+  it('accepts a 40-character random value and a value with change-me in the middle', () => {
+    process.env.JWT_SECRET = 'q8Zr3KfV1mXw5TnB7yLc9PdH2sGj4UaE6oRiN0vC';
+    expect(getJwtSecretKey()).toEqual(new TextEncoder().encode('q8Zr3KfV1mXw5TnB7yLc9PdH2sGj4UaE6oRiN0vC'));
+    process.env.JWT_SECRET = 'my-change-me-in-the-middle-of-a-secret-value';
+    expect(() => getJwtSecretKey()).not.toThrow();
   });
 });
