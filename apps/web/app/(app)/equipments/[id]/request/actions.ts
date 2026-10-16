@@ -22,11 +22,16 @@ export async function createRequestAction(_previous: RequestFormState, formData:
   const checked = validateRequestForm({ quantity: formData.get('quantity'), reason: formData.get('reason') });
   if (!checked.ok) return { ok: false, fieldErrors: checked.fieldErrors, values };
 
+  // Optional: a missing or malformed key just means no replay protection (never a local error).
+  const idempotencyKey = formData.get('idempotencyKey');
+  const headers = isUuid(idempotencyKey) ? { 'Idempotency-Key': idempotencyKey } : undefined;
+
   let created: EquipmentRequest;
   try {
     created = await apiFetch<EquipmentRequest>('/requests', {
       method: 'POST',
       body: { equipmentId, quantity: checked.value.quantity, reason: checked.value.reason },
+      ...(headers ? { headers } : {}),
     });
   } catch (error) {
     // Only API errors become form state; redirect() signals and unexpected errors propagate untouched.

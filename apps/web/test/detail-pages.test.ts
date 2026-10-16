@@ -4,6 +4,11 @@ import { APPROVED_DETAIL, IDS, REJECTED_DETAIL, makeDetail, makeEquipment } from
 import { anchors, render, visibleText } from './support/render';
 
 vi.mock('server-only', () => ({}));
+// The page generates a key per render; a fixed one keeps the snapshot stable.
+vi.mock('node:crypto', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('node:crypto')>()),
+  randomUUID: () => '00000000-0000-4000-8000-000000000001',
+}));
 vi.mock('@/lib/api', () => ({ apiFetch: vi.fn() }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
@@ -28,6 +33,7 @@ import { LoginForm } from '@/app/(auth)/login/login-form';
 import { apiFetch } from '@/lib/api';
 import { ApiRequestError, makeApiError } from '@/lib/api-error';
 
+const FIXED_KEY = '00000000-0000-4000-8000-000000000001';
 const mockedFetch = vi.mocked(apiFetch);
 const returns = (value: unknown) => mockedFetch.mockImplementation((async () => value) as typeof apiFetch);
 const params = (id: string) => ({ params: Promise.resolve({ id }), searchParams: Promise.resolve({}) });
@@ -153,7 +159,7 @@ describe('request page (employee) and request form', () => {
   });
 
   it('the request form in its initial state: labelled fields, hint wiring, no errors, enabled submit', () => {
-    const html = render(createElement(RequestForm, { equipmentId: IDS.equipment, stockQuantity: 10 }));
+    const html = render(createElement(RequestForm, { equipmentId: IDS.equipment, stockQuantity: 10, idempotencyKey: FIXED_KEY }));
     expect(html).toMatch(/<label[^>]*for="quantity"/);
     expect(html).toMatch(/<label[^>]*for="reason"/);
     expect(html).toContain('aria-describedby="quantity-hint"');
@@ -161,6 +167,7 @@ describe('request page (employee) and request form', () => {
     expect(html).not.toContain('aria-invalid');
     expect(html).toMatch(/<button[^>]*type="submit"[^>]*>ส่งคำขอ<\/button>/);
     expect(html).toContain(`value="${IDS.equipment}"`);
+    expect(html).toContain(`<input type="hidden" name="idempotencyKey" value="${FIXED_KEY}"`);
     expect(html).toMatchSnapshot();
   });
 });

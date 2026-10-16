@@ -117,4 +117,54 @@ describe('createRequestAction', () => {
     );
     expect(apiFetchMock).toHaveBeenCalledTimes(1);
   });
+
+  describe('idempotency key', () => {
+    const KEY = '3f2b8c1e-5d6a-4f7b-9c8d-0123456789ab';
+    const valid = { equipmentId: EQUIPMENT_ID, quantity: '1', reason: 'need a screen' };
+
+    it('a valid UUID in the form is sent as the Idempotency-Key header', async () => {
+      apiFetchMock.mockResolvedValue({ id: REQUEST_ID });
+      await expect(run({ ...valid, idempotencyKey: KEY })).rejects.toMatchObject({ target: `/requests/${REQUEST_ID}?created=1` });
+      expect(apiFetchMock).toHaveBeenCalledWith('/requests', {
+        method: 'POST',
+        body: { equipmentId: EQUIPMENT_ID, quantity: 1, reason: 'need a screen' },
+        headers: { 'Idempotency-Key': KEY },
+      });
+    });
+
+    it.each([['missing', undefined], ['empty', ''], ['not a UUID', 'not-a-uuid'], ['padded', ` ${KEY} `]])(
+      'a %s value sends no header and causes no local error',
+      async (_name, value) => {
+        apiFetchMock.mockResolvedValue({ id: REQUEST_ID });
+        const fields = value === undefined ? valid : { ...valid, idempotencyKey: value };
+        await expect(run(fields)).rejects.toMatchObject({ target: `/requests/${REQUEST_ID}?created=1` });
+        expect(apiFetchMock).toHaveBeenCalledTimes(1);
+        const options = apiFetchMock.mock.calls[0][1] as Record<string, unknown>;
+        expect(options.headers).toBeUndefined();
+      },
+    );
+
+    it('a non-string idempotencyKey field (a file) sends no header', async () => {
+      apiFetchMock.mockResolvedValue({ id: REQUEST_ID });
+      const data = form(valid);
+      data.set('idempotencyKey', new File(['x'], 'a.txt'));
+      await expect(createRequestAction(initialRequestFormState, data)).rejects.toBeInstanceOf(RedirectSignal);
+      expect((apiFetchMock.mock.calls[0][1] as Record<string, unknown>).headers).toBeUndefined();
+    });
+
+    it('a replay (the API answers 200 with the original) redirects exactly like a creation', async () => {
+      apiFetchMock.mockResolvedValue({ id: REQUEST_ID });
+      await run({ ...valid, idempotencyKey: KEY }).catch(() => undefined);
+      await expect(run({ ...valid, idempotencyKey: KEY })).rejects.toMatchObject({ target: `/requests/${REQUEST_ID}?created=1` });
+      expect(redirectMock).toHaveBeenLastCalledWith(`/requests/${REQUEST_ID}?created=1`);
+    });
+
+    it('IDEMPOTENCY_KEY_REUSED becomes form state with the typed values', async () => {
+      const body = makeApiError(422, 'IDEMPOTENCY_KEY_REUSED', 'Idempotency key was already used with a different request');
+      apiFetchMock.mockRejectedValue(new ApiRequestError(422, body));
+      const result = await run({ ...valid, quantity: '2', idempotencyKey: KEY });
+      expect(result).toEqual({ ok: false, error: body, values: { quantity: '2', reason: 'need a screen' } });
+      expect(redirectMock).not.toHaveBeenCalled();
+    });
+  });
 });

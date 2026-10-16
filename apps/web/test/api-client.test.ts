@@ -57,6 +57,27 @@ describe('apiFetch', () => {
     expect(init.body).toBe(JSON.stringify({ quantity: 1 }));
   });
 
+  it('sends extra headers together with Authorization, and they can NOT override Authorization', async () => {
+    fetchMock.mockResolvedValue(json(200, { ok: true }));
+    await apiFetch('/requests', {
+      method: 'POST',
+      body: { quantity: 1 },
+      headers: { 'Idempotency-Key': 'k-1', Authorization: 'Bearer evil', authorization: 'Bearer evil2' },
+    });
+    const [, init] = fetchMock.mock.calls[0] as [URL, RequestInit & { headers: Record<string, string> }];
+    expect(init.headers['Idempotency-Key']).toBe('k-1');
+    expect(init.headers.Authorization).toBe('Bearer tok.en.value');
+    expect(Object.keys(init.headers).filter((name) => name.toLowerCase() === 'authorization')).toEqual(['Authorization']);
+    expect(init.headers['Content-Type']).toBe('application/json');
+  });
+
+  it('without the headers option only Authorization is sent (existing behaviour)', async () => {
+    fetchMock.mockResolvedValue(json(200, { ok: true }));
+    await apiFetch('/equipments');
+    const [, init] = fetchMock.mock.calls[0] as [URL, RequestInit & { headers: Record<string, string> }];
+    expect(init.headers).toEqual({ Authorization: 'Bearer tok.en.value' });
+  });
+
   it('401 -> redirect to the logout Route Handler (nothing else escapes)', async () => {
     fetchMock.mockResolvedValue(json(401, { statusCode: 401, error: 'Unauthorized', message: 'Unauthorized', code: 'UNAUTHORIZED' }));
     await expect(apiFetch('/auth/me')).rejects.toMatchObject({ target: '/api/auth/logout?expired=1' });

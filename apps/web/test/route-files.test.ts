@@ -81,3 +81,22 @@ describe('client/server boundaries', () => {
     for (const line of exports) expect(line).toMatch(/^export async function /);
   });
 });
+
+describe('idempotency key generation', () => {
+  const pageFile = path.join(ROOT, 'app/(app)/equipments/[id]/request/page.tsx');
+  const formFile = path.join(ROOT, 'app/(app)/equipments/[id]/request/request-form.tsx');
+
+  it("the request form page is a Server Component that generates the key with randomUUID from 'node:crypto'", () => {
+    const source = readFileSync(pageFile, 'utf8');
+    expect(startsWithDirective(pageFile, 'use client')).toBe(false);
+    expect(source).toMatch(/import \{ randomUUID \} from 'node:crypto';/);
+    expect(source).toMatch(/const idempotencyKey = randomUUID\(\)/);
+  });
+
+  it('the client form never generates or regenerates the key', () => {
+    const source = readFileSync(formFile, 'utf8');
+    expect(startsWithDirective(formFile, 'use client')).toBe(true);
+    expect(source).not.toMatch(/randomUUID|crypto/);
+    expect(source).toMatch(/name="idempotencyKey"/);
+  });
+});

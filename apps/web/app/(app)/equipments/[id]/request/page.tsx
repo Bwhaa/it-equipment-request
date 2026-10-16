@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { Metadata } from 'next';
 import type { Equipment } from '@app/shared';
 import Link from 'next/link';
@@ -25,6 +26,8 @@ export default async function RequestEquipmentPage({ params }: { params: Promise
   if (!isUuid(id)) notFound();
   const equipment = await loadEquipment(id);
   if (!equipment) notFound();
+  // A new key per render: one page load = one logical request (a double submit or "back and submit again" reuses it).
+  const idempotencyKey = randomUUID();
 
   return (
     <section className="max-w-xl">
@@ -38,7 +41,7 @@ export default async function RequestEquipmentPage({ params }: { params: Promise
       {equipment.stockQuantity === 0 ? (
         <Alert variant="warning">อุปกรณ์นี้หมดชั่วคราว ไม่สามารถขอเบิกได้</Alert>
       ) : (
-        <RequestForm equipmentId={equipment.id} stockQuantity={equipment.stockQuantity} />
+        <RequestForm equipmentId={equipment.id} stockQuantity={equipment.stockQuantity} idempotencyKey={idempotencyKey} />
       )}
     </section>
   );

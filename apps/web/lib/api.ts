@@ -10,6 +10,8 @@ export interface ApiFetchOptions {
   method?: string;
   body?: unknown;
   query?: Record<string, string | number | undefined>;
+  /** Extra request headers; Authorization is always set from the cookie and can not be overridden. */
+  headers?: Record<string, string>;
 }
 
 /**
@@ -25,7 +27,11 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     if (value !== undefined) url.searchParams.set(key, String(value));
   }
 
-  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+  const headers: Record<string, string> = {};
+  for (const [name, value] of Object.entries(options.headers ?? {})) {
+    if (name.toLowerCase() !== 'authorization') headers[name] = value;
+  }
+  headers.Authorization = `Bearer ${token}`;
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
 
   let response: Response;
