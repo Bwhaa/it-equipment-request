@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { RejectNulCharactersPipe } from './common/reject-nul.pipe';
 import { requestIdMiddleware } from './common/request-id.middleware';
+import { securityHeadersMiddleware } from './common/security-headers.middleware';
 import { parseTrustProxy } from './common/trust-proxy';
 
 interface SettableApp {
@@ -21,12 +22,14 @@ function isSettableApp(value: unknown): value is SettableApp {
 
 export function configureApp(app: INestApplication): void {
   const trustProxy = parseTrustProxy(app.get(ConfigService).get<string>('TRUST_PROXY'));
-  if (trustProxy !== undefined) {
-    const express: unknown = app.getHttpAdapter().getInstance();
-    if (isSettableApp(express)) express.set('trust proxy', trustProxy);
+  const express: unknown = app.getHttpAdapter().getInstance();
+  if (isSettableApp(express)) {
+    express.set('x-powered-by', false);
+    if (trustProxy !== undefined) express.set('trust proxy', trustProxy);
   }
 
   app.use(requestIdMiddleware);
+  app.use(securityHeadersMiddleware);
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
     new RejectNulCharactersPipe(),
