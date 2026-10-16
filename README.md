@@ -98,6 +98,8 @@ docs/            checkpoint-1.2.md, erDiagram.txt, erd.png
 ทำงานบน `develop` หนึ่ง task ต่อหนึ่ง commit แล้วเปิด PR เดียว `develop` → `main`
 **ห้าม squash merge** (ใช้ merge commit หรือ rebase) เพื่อให้ commit รายฟีเจอร์ยังอยู่
 
+**งานอัปเกรดหลังส่ง:** งานที่ส่งตรวจอยู่ที่ branch `develop` (tag `submission-v1`, PR `develop` → `main`) งานปรับปรุงหลังส่งทำแยกที่ branch `upgrade/v2` เป็น commit ใหม่ต่อจากจุดส่งงาน และเปิด PR แยก (`upgrade/v2` → `develop`) โดยไม่แก้ประวัติของงานที่ส่ง ห้าม squash merge ทั้งสอง PR
+
 ## 10. ข้อจำกัดที่รู้
 
 - Login rate limit เก็บในหน่วยความจำ: แยกต่อ instance และหายเมื่อ restart

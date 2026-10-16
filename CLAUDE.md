@@ -20,11 +20,11 @@
 - Containers run as the non-root `node` user; the web container receives only the variables it needs (no DATABASE_URL); the image never contains any env file; `.sh` files and Dockerfiles use LF line endings (`.gitattributes`).
 
 ## Git
-- `main` holds only the initial commit until submission. All work happens on `develop`.
-- Never commit to, push to, rebase, or merge into `main`, except the initial commit in task 1.
-- Do not push and do not add remotes; the user pushes. Never force-push.
-- The user opens one PR `develop` → `main` at submission. It must NOT be squash-merged
-  (merge commit or rebase only) so the per-feature commits survive.
+- `main` holds only the initial commit. `develop` is the SUBMITTED state (tag `submission-v1`, PR #1 `develop` → `main`). Never commit to, push to, rebase, or merge into `develop` or `main`.
+- All new work happens on `upgrade/v2` (created from `develop` at `submission-v1`) as NEW commits. Never rebase, amend or force-push anything that has already been pushed.
+- Do not push and do not add remotes; the user pushes.
+- The user opens PR #2 `upgrade/v2` → `develop` (stacked on PR #1; it is retargeted to `main` after PR #1 is merged). Neither PR may be squash-merged (merge commit or rebase only) so the per-feature commits survive.
+- A commit that changes the schema, a Dockerfile or docker-compose.yml is pushed only after the full e2e suite and a from-scratch `docker compose build --no-cache` on a clean clone have passed (the user runs the clone check).
 
 ## Commands
 - `docker compose up -d db`
