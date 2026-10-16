@@ -64,7 +64,8 @@ export type ErrorCode =
   | 'VERSION_CONFLICT'
   | 'EQUIPMENT_UNAVAILABLE'
   | 'TOO_MANY_REQUESTS'
-  | 'INTERNAL_ERROR';
+  | 'INTERNAL_ERROR'
+  | 'DUPLICATE_EQUIPMENT_NAME';
 
 export interface ApiError {
   statusCode: number;

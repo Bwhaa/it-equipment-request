@@ -5,8 +5,12 @@ describe('isErrorCode', () => {
     expect(isErrorCode(code)).toBe(true);
   });
 
-  it('covers exactly eleven codes', () => {
-    expect(Object.keys(ERROR_STATUS)).toHaveLength(11);
+  it('covers exactly twelve codes', () => {
+    expect(Object.keys(ERROR_STATUS)).toHaveLength(12);
+  });
+
+  it('DUPLICATE_EQUIPMENT_NAME is a 409', () => {
+    expect(ERROR_STATUS.DUPLICATE_EQUIPMENT_NAME).toBe(409);
   });
 
   it.each(['NOPE', 5, null, undefined, 'toString', '__proto__'])('false for %p', (value) => {

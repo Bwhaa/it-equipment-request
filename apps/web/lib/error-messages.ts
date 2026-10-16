@@ -10,6 +10,7 @@ export const ERROR_TITLE: Record<ErrorCode, string> = {
   INSUFFICIENT_STOCK: 'จำนวนคงเหลือไม่พอ',
   EQUIPMENT_INACTIVE: 'อุปกรณ์ถูกปิดใช้งาน',
   VERSION_CONFLICT: 'ข้อมูลถูกแก้ไขระหว่างนี้',
+  DUPLICATE_EQUIPMENT_NAME: 'ชื่ออุปกรณ์นี้ถูกใช้แล้ว',
   EQUIPMENT_UNAVAILABLE: 'ไม่สามารถเบิกอุปกรณ์นี้ได้ในขณะนี้',
   TOO_MANY_REQUESTS: 'ทำรายการบ่อยเกินไป กรุณาลองใหม่ภายหลัง',
   INTERNAL_ERROR: 'ระบบขัดข้อง กรุณาลองใหม่',

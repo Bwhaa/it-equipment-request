@@ -65,7 +65,7 @@ describe('isApiError', () => {
     expect(isApiError(null)).toBe(false);
     expect(isApiError('x')).toBe(false);
   });
-  it('knows all eleven codes', () => {
+  it('knows all twelve codes', () => {
     for (const code of [
       'VALIDATION_ERROR',
       'UNAUTHORIZED',
@@ -78,6 +78,7 @@ describe('isApiError', () => {
       'EQUIPMENT_UNAVAILABLE',
       'TOO_MANY_REQUESTS',
       'INTERNAL_ERROR',
+      'DUPLICATE_EQUIPMENT_NAME',
     ] as const) {
       expect(isApiError(makeApiError(400, code, 'm'))).toBe(true);
     }

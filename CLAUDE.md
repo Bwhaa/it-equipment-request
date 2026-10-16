@@ -64,6 +64,7 @@
 - Prisma: camelCase fields + `@map` snake_case, `@@map` table names, `@db.Uuid` ids,
   `@db.Timestamptz(3)` timestamps. Schema changes only via migrations.
   Never run `prisma db push`. Never remove the hand-written CHECK constraints (§2).
+- Equipment names are unique ignoring case and surrounding spaces, INACTIVE items included. The rule is the SQL unique index `equipments_name_key_idx` on `lower(btrim(name))` (hand-written migration; Prisma cannot model it, `prisma migrate diff` shows no drop). Every equipment write maps `P2002` to `409 DUPLICATE_EQUIPMENT_NAME`; never rely on a pre-check query alone.
 - Prisma blocks `migrate reset` for AI agents. Never run `db:reset`, `prisma migrate reset`,
   `db push --force-reset`, `docker compose down -v`, or drop a database yourself, and never
   bypass that guard. If a reset is needed, stop and ask the user to run
@@ -145,6 +146,7 @@
 - Smoke tests against the dev API are read-only (GET + login only). Anything that creates or changes data runs in e2e on the test database.
 - Never run `rm` with a variable that could be empty or unquoted: use a literal path or `"${VAR:?}"`.
 - Never commit `.env` or secrets.
+- A migration that adds something Prisma cannot model is written by hand and verified with `prisma migrate diff` against a throwaway shadow database; it is never applied to the dev database by an AI agent (the container entrypoint applies it on the user's next `docker compose up --build`).
 - Verify Docker changes in a throwaway compose project named `itreq-verify` built from a copy of the git-visible files; never test on the user's project or volume. `docker compose -p itreq-verify down` and `docker volume rm itreq-verify_db_data` are allowed ONLY for that project; `down -v`, `db:reset` and migrate reset stay forbidden everywhere else.
 - End every task with: files changed, commands run + results, acceptance criteria
   checked one by one, open questions, follow-ups.

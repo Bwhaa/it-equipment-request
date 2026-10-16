@@ -15,12 +15,19 @@ const ALL_CODES: ErrorCode[] = [
   'EQUIPMENT_UNAVAILABLE',
   'TOO_MANY_REQUESTS',
   'INTERNAL_ERROR',
+  'DUPLICATE_EQUIPMENT_NAME',
 ];
 
 describe('ERROR_TITLE', () => {
-  it('has a non-empty Thai title for each of the eleven codes and nothing else', () => {
+  it('has a non-empty Thai title for each of the twelve codes and nothing else', () => {
     expect(Object.keys(ERROR_TITLE).sort()).toEqual([...ALL_CODES].sort());
     for (const code of ALL_CODES) expect(ERROR_TITLE[code].trim().length).toBeGreaterThan(0);
+  });
+});
+
+describe('DUPLICATE_EQUIPMENT_NAME', () => {
+  it('has the agreed Thai title', () => {
+    expect(ERROR_TITLE.DUPLICATE_EQUIPMENT_NAME).toBe('ชื่ออุปกรณ์นี้ถูกใช้แล้ว');
   });
 });
 

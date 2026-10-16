@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Equipment, Paginated } from '@app/shared';
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import type { AuthUser } from '../auth/auth.types';
 import { escapeLike } from '../common/escape-like';
 import { buildPaginated, toSkipTake } from '../common/pagination';
@@ -50,10 +50,14 @@ export class EquipmentsService {
   }
 
   async create(dto: CreateEquipmentDto): Promise<Equipment> {
-    const created = await this.prisma.equipment.create({
-      data: { name: dto.name, category: dto.category, stockQuantity: dto.stockQuantity, status: dto.status },
-    });
-    return toEquipment(created);
+    try {
+      const created = await this.prisma.equipment.create({
+        data: { name: dto.name, category: dto.category, stockQuantity: dto.stockQuantity, status: dto.status },
+      });
+      return toEquipment(created);
+    } catch (error) {
+      throw this.isUniqueViolation(error) ? this.duplicateName() : error;
+    }
   }
 
   async update(id: string, dto: UpdateEquipmentDto): Promise<Equipment> {
@@ -70,10 +74,15 @@ export class EquipmentsService {
       throw new BadRequestException({ code: 'VALIDATION_ERROR', message: 'Fields must not be null' });
     }
 
-    const res = await this.prisma.equipment.updateMany({
-      where: { id, version },
-      data: { ...data, version: { increment: 1 } },
-    });
+    let res: Prisma.BatchPayload;
+    try {
+      res = await this.prisma.equipment.updateMany({
+        where: { id, version },
+        data: { ...data, version: { increment: 1 } },
+      });
+    } catch (error) {
+      throw this.isUniqueViolation(error) ? this.duplicateName() : error;
+    }
     if (res.count === 0) {
       const exists = await this.prisma.equipment.findUnique({ where: { id }, select: { id: true } });
       if (!exists) throw this.notFound();
@@ -83,6 +92,18 @@ export class EquipmentsService {
       });
     }
     return toEquipment(await this.prisma.equipment.findUniqueOrThrow({ where: { id } }));
+  }
+
+  /**
+   * The only unique constraint besides the primary key is the expression index on lower(btrim(name)): its
+   * `meta.target` can be empty, so the error code alone identifies it. Never rely on a pre-check query instead.
+   */
+  private isUniqueViolation(error: unknown): boolean {
+    return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+  }
+
+  private duplicateName(): ConflictException {
+    return new ConflictException({ code: 'DUPLICATE_EQUIPMENT_NAME', message: 'An equipment with this name already exists' });
   }
 
   private notFound(): NotFoundException {
