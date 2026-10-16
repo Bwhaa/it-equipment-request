@@ -47,6 +47,8 @@
   `ParseUUIDPipe` on every `:id`. Global `ValidationPipe({ whitelist: true,
   forbidNonWhitelisted: true, transform: true })`. Numeric query fields use `@Type(() => Number)`.
 - String inputs use the safe `trim` from `src/common/transforms.ts` (§4.4).
+- Every string that arrives in a request (body, query, params, including nested values and property names) that contains text which cannot be stored (a NUL character, or an unpaired UTF-16 surrogate) is rejected with `400 VALIDATION_ERROR`: `RejectNulCharactersPipe` runs before the `ValidationPipe` in `configureApp`. Never remove or reorder it.
+- Every `@IsInt()` has a `@Max(...)` that fits the database column and every `@IsString()` has a length limit (`@MaxLength`/`@Length`); out-of-range or oversized input must be a 400, never a 500. `dto-limits.spec.ts` enforces it for DTOs.
 - Every thrown error is `new XxxException({ code, message })` with a `code` from the
   `ErrorCode` type (§6). Unexpected errors become `500 INTERNAL_ERROR` with a generic
   message; the stack is logged server-side with the request id, never sent to the client.
