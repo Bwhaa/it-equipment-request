@@ -15,6 +15,7 @@ COPY tsconfig.base.json ./
 COPY packages/shared packages/shared
 COPY apps/api apps/api
 RUN pnpm --filter api build && pnpm --filter api build:seed
+RUN test -f apps/api/dist/main.js && test -f apps/api/dist-prisma/seed-if-empty.js
 RUN pnpm --filter api deploy --legacy --prod /prod/api \
  && cp -r apps/api/dist /prod/api/dist \
  && cp -r apps/api/dist-prisma /prod/api/dist-prisma \

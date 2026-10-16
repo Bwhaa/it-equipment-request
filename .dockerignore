@@ -11,3 +11,4 @@ docs
 .claude
 apps/api/test
 apps/web/test
+**/*.tsbuildinfo

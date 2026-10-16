@@ -13,6 +13,7 @@ COPY packages/shared packages/shared
 COPY apps/web apps/web
 ENV NEXT_OUTPUT=standalone NEXT_TELEMETRY_DISABLED=1
 RUN pnpm --filter web build
+RUN test -f apps/web/.next/standalone/apps/web/server.js && test -d apps/web/.next/static
 
 FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
