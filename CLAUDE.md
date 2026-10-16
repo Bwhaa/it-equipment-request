@@ -48,6 +48,8 @@
   forbidNonWhitelisted: true, transform: true })`. Numeric query fields use `@Type(() => Number)`.
 - String inputs use the safe `trim` from `src/common/transforms.ts` (§4.4).
 - Every string that arrives in a request (body, query, params, including nested values and property names) that contains text which cannot be stored (a NUL character, or an unpaired UTF-16 surrogate) is rejected with `400 VALIDATION_ERROR`: `RejectNulCharactersPipe` runs before the `ValidationPipe` in `configureApp`. Never remove or reorder it.
+- The placeholder JWT_SECRET from `.env.example` is rejected at startup by both the API and the web app (prefix `change-me`/`replace-me`). Never weaken that check.
+- Security headers: Next sets them from `apps/web/lib/security-headers.ts`; the API disables `x-powered-by` and sets `nosniff` and `no-store`. CSP stays limited to `frame-ancestors`; HSTS belongs to the TLS proxy.
 - Every `@IsInt()` has a `@Max(...)` that fits the database column and every `@IsString()` has a length limit (`@MaxLength`/`@Length`); out-of-range or oversized input must be a 400, never a 500. `dto-limits.spec.ts` enforces it for DTOs.
 - Every thrown error is `new XxxException({ code, message })` with a `code` from the
   `ErrorCode` type (§6). Unexpected errors become `500 INTERNAL_ERROR` with a generic
@@ -111,6 +113,7 @@
   latest values in the form, not just a toast. Disable "request" when stock = 0
   and show "หมด"; disable Approve + show a warning when equipment is INACTIVE or stock < qty.
 - A file with `'use server'` exports ONLY async functions; keep state types, initial state and constants in separate files. A Server Action catches only `ApiRequestError` and never wraps `redirect()` or `notFound()` in a try/catch that swallows them.
+- Credential inputs in client-handled forms carry no `name` attribute: a native submit before hydration must not put the password in the URL.
 - Client-side validation must never be stricter than the server and must not decide business rules the API owns (for example, the stock check is a soft check made by the API: quantities above the stock are allowed to reach it).
 - Dates are shown with `formatDateTime` in `lib/format.ts` (Asia/Bangkok, Gregorian years) so server and client render the same text.
 - Pages with a `loading.tsx` stream, so `notFound()` renders the not-found content with HTTP 200 (verified on the production build). Authorization and 404 semantics are enforced and tested at the API level (e2e); do not assert a 404 status for web pages.

@@ -13,7 +13,7 @@ Prerequisites: Docker Desktop หรือ Docker Engine ที่มี Compose
 
 ```bash
 cp .env.example .env
-openssl rand -hex 32        # เอาค่าที่ได้ไปแทนบรรทัด JWT_SECRET=... ใน .env (ต้องยาวอย่างน้อย 32 ตัวอักษร)
+sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=$(openssl rand -hex 32)|" .env && rm .env.bak
 docker compose up --build   # ใส่ -d เพื่อรันเบื้องหลัง
 ```
 
@@ -21,7 +21,7 @@ docker compose up --build   # ใส่ -d เพื่อรันเบื้�
 - API: http://localhost:3001/api/v1
 - รอจนทุก service เป็น `healthy` (ตรวจด้วย `docker compose ps`) — api จะ apply migration และ seed เองก่อนเริ่มรับ request
 
-ถ้า `JWT_SECRET` สั้นกว่า 32 ตัวอักษร API จะไม่ยอมเริ่มทำงาน (ตั้งใจให้เป็นเช่นนั้น)
+ถ้า `JWT_SECRET` สั้นกว่า 32 ตัวอักษร API จะไม่ยอมเริ่มทำงาน (ตั้งใจให้เป็นเช่นนั้น) และ API จะไม่เริ่มเมื่อ `JWT_SECRET` ยังเป็นค่าตัวอย่างจาก `.env.example` (container จะหยุดและ log ระบุชื่อ `JWT_SECRET`)
 
 ## 3. บัญชีทดสอบ
 
@@ -109,3 +109,8 @@ docs/            checkpoint-1.2.md, erDiagram.txt, erd.png
 - ไม่มี browser (UI) automation test: พฤติกรรม UI ตรวจด้วย unit test และ curl กับ production build
 - ใช้ Tailwind component ธรรมดา (ไม่มี UI library)
 - container ผูกพอร์ตกับ 127.0.0.1 เท่านั้น
+- bcrypt ใช้เฉพาะ 72 ไบต์แรกของรหัสผ่าน (อักษรไทยใช้ 3 ไบต์ต่อตัว) ส่วนที่เกินถูกละเว้นเงียบๆ; API จำกัดรหัสผ่านไม่เกิน 128 ตัวอักษร
+- เมื่อใช้งานหลัง HTTPS ให้ตั้ง `COOKIE_SECURE=true`; แอปไม่ตั้ง HSTS (เป็นหน้าที่ของ TLS proxy)
+- ฐานข้อมูลใช้ผู้ใช้/รหัสผ่าน `app`/`app` และเปิดพอร์ต 5432 บน 127.0.0.1 เท่านั้น: สำหรับใช้ในเครื่อง
+- health check ของ api พิสูจน์เพียงว่า process ตอบสนอง (เรียก `/auth/me` แล้วคาดหวัง 401) ไม่ได้ query ฐานข้อมูล
+- security header ที่ตั้งไว้: `nosniff`, referrer policy, `X-Frame-Options` และ CSP `frame-ancestors` เท่านั้น (ไม่มี CSP ของ script)
