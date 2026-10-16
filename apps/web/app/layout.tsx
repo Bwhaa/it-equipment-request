@@ -1,3 +1,4 @@
+import '@fontsource-variable/noto-sans-thai/wght.css';
 import type { Metadata } from 'next';
 import './globals.css';
 

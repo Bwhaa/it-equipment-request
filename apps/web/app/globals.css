@@ -1,25 +1,107 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: system-ui, "Noto Sans Thai", "Sarabun", Tahoma, sans-serif;
+  --ground: #f5f7f5;
+  --surface: #ffffff;
+  --ink: #0b0f0d;
+  --muted: #55605a;
+  --line: #e2e8e3;
+  --field-line: #8a948d;
+  --brand: #15803d;
+  --brand-strong: #166534;
+  --brand-text: #15803d;
+  --brand-tint: #dcfce7;
+  --on-brand: #ffffff;
+  --approved-bg: #dcfce7;
+  --approved-text: #166534;
+  --pending-bg: #fef3c7;
+  --pending-text: #92400e;
+  --danger-bg: #fee4e2;
+  --danger-text: #b42318;
+  --danger-solid: #b42318;
+  --on-danger: #ffffff;
+  --chip-bg: #edf0ee;
+  --chip-text: #3f4943;
+  --disabled-bg: #edf0ee;
+  --disabled-text: #6b756f;
+  --inverse: #0b0f0d;
+  --on-inverse: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --ground: #0b0f0d;
+    --surface: #131a16;
+    --ink: #f2f5f3;
+    --muted: #a3aea7;
+    --line: #26302a;
+    --field-line: #6b756f;
+    --brand-text: #4ade80;
+    --brand-tint: #14532d;
+    --approved-bg: #14532d;
+    --approved-text: #bbf7d0;
+    --pending-bg: #422006;
+    --pending-text: #fcd34d;
+    --danger-bg: #450a0a;
+    --danger-text: #fca5a5;
+    --chip-bg: #26302a;
+    --chip-text: #d4dbd6;
+    --disabled-bg: #1e2722;
+    --disabled-text: #7c867f;
+    --inverse: #f2f5f3;
+    --on-inverse: #0b0f0d;
   }
 }
 
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-field-line: var(--field-line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-text: var(--brand-text);
+  --color-brand-tint: var(--brand-tint);
+  --color-on-brand: var(--on-brand);
+  --color-approved-bg: var(--approved-bg);
+  --color-approved-text: var(--approved-text);
+  --color-pending-bg: var(--pending-bg);
+  --color-pending-text: var(--pending-text);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-text: var(--danger-text);
+  --color-danger-solid: var(--danger-solid);
+  --color-on-danger: var(--on-danger);
+  --color-chip-bg: var(--chip-bg);
+  --color-chip-text: var(--chip-text);
+  --color-disabled-bg: var(--disabled-bg);
+  --color-disabled-text: var(--disabled-text);
+  --color-inverse: var(--inverse);
+  --color-on-inverse: var(--on-inverse);
+  --font-sans: 'Noto Sans Thai Variable', 'Noto Sans Thai', 'Leelawadee UI', 'Sukhumvit Set', system-ui, sans-serif;
+  --radius-card: 20px;
+  --radius-field: 14px;
+  --radius-pill: 9999px;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--ground);
+  color: var(--ink);
   font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-text);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+  }
 }
