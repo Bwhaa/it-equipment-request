@@ -50,6 +50,7 @@
 - Every string that arrives in a request (body, query, params, including nested values and property names) that contains text which cannot be stored (a NUL character, or an unpaired UTF-16 surrogate) is rejected with `400 VALIDATION_ERROR`: `RejectNulCharactersPipe` runs before the `ValidationPipe` in `configureApp`. Never remove or reorder it.
 - The placeholder JWT_SECRET from `.env.example` is rejected at startup by both the API and the web app (prefix `change-me`/`replace-me`). Never weaken that check.
 - Security headers: Next sets them from `apps/web/lib/security-headers.ts`; the API disables `x-powered-by` and sets `nosniff` and `no-store`. CSP stays limited to `frame-ancestors`; HSTS belongs to the TLS proxy.
+- Error codes written as string literals in the API must be keys of `ERROR_STATUS` (enforced by `error-code-literals.spec.ts`, including conditional expressions).
 - Every `@IsInt()` has a `@Max(...)` that fits the database column and every `@IsString()` has a length limit (`@MaxLength`/`@Length`); out-of-range or oversized input must be a 400, never a 500. `dto-limits.spec.ts` enforces it for DTOs.
 - Every thrown error is `new XxxException({ code, message })` with a `code` from the
   `ErrorCode` type (§6). Unexpected errors become `500 INTERNAL_ERROR` with a generic
@@ -113,6 +114,7 @@
   latest values in the form, not just a toast. Disable "request" when stock = 0
   and show "หมด"; disable Approve + show a warning when equipment is INACTIVE or stock < qty.
 - A file with `'use server'` exports ONLY async functions; keep state types, initial state and constants in separate files. A Server Action catches only `ApiRequestError` and never wraps `redirect()` or `notFound()` in a try/catch that swallows them.
+- Every page exports `metadata` with a title; every `loading.tsx` root has `role="status"` and an sr-only text; every `text-red-600/700` has a `dark:text-red-300/400` variant (enforced by tests).
 - Credential inputs in client-handled forms carry no `name` attribute: a native submit before hydration must not put the password in the URL.
 - Client-side validation must never be stricter than the server and must not decide business rules the API owns (for example, the stock check is a soft check made by the API: quantities above the stock are allowed to reach it).
 - Dates are shown with `formatDateTime` in `lib/format.ts` (Asia/Bangkok, Gregorian years) so server and client render the same text.
@@ -131,6 +133,7 @@
 - Each feature task adds e2e tests for its own acceptance criteria.
 - Never delete or skip (`.skip`, `xit`) an existing test to make the gate pass.
 - Web unit tests use vitest in the node environment (`apps/web/test`); `pnpm test` runs them together with the API unit tests. Pages and components are verified with the curl smoke checks in the task acceptance.
+- Web UI states are covered by `renderToString` snapshot tests in `apps/web/test`. A snapshot change must be reviewed in the commit that causes it; a refactor commit must leave every snapshot untouched.
 
 ## Workflow
 - Do only the current task's scope. Found something outside it? List it under

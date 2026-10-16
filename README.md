@@ -64,6 +64,8 @@ pnpm --filter api test:e2e
 การอนุมัติพร้อมกัน เช่น สต็อก 4 กับ 10 คำขอ → อนุมัติได้ 4 และสต็อกไม่ติดลบ (`concurrency.e2e-spec.ts`),
 และ `VERSION_CONFLICT` เมื่อ PATCH อุปกรณ์ด้วย version เก่าหรือพร้อมกัน (`concurrency.e2e-spec.ts`, `equipments.e2e-spec.ts`)
 
+ชุดทดสอบของ web (`apps/web/test`) ครอบคลุมการ render ด้วย `renderToString` ของ component ใน `components/ui`, หน้ารายการ/รายละเอียด/ฟอร์ม และสถานะ loading / empty / error ของทุกหน้า (เปรียบเทียบกับ snapshot), การมี title ของทุกหน้า และกฎ class สีข้อความ error ในโหมดมืด แต่ **ไม่ครอบคลุม** การคลิก, hydration, การย้ายโฟกัสหลังส่งฟอร์มไม่ผ่าน และการแสดงผลจริงในเบราว์เซอร์
+
 ## 7. โครงสร้างโปรเจกต์
 
 ```
