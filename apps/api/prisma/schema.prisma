@@ -73,6 +73,7 @@ model Request {
   reviewedById String?       @map("reviewed_by_id") @db.Uuid
   reviewedAt   DateTime?     @map("reviewed_at") @db.Timestamptz(3)
   approvedAt   DateTime?     @map("approved_at") @db.Timestamptz(3)
+  idempotencyKey String?     @map("idempotency_key") @db.Uuid
   createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
 
@@ -84,6 +85,7 @@ model Request {
   @@index([status, createdAt(sort: Desc)])
   @@index([requesterId, createdAt(sort: Desc)])
   @@index([equipmentId])
+  @@unique([requesterId, idempotencyKey])
   @@map("requests")
 }
 

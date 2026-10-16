@@ -65,7 +65,8 @@ export type ErrorCode =
   | 'EQUIPMENT_UNAVAILABLE'
   | 'TOO_MANY_REQUESTS'
   | 'INTERNAL_ERROR'
-  | 'DUPLICATE_EQUIPMENT_NAME';
+  | 'DUPLICATE_EQUIPMENT_NAME'
+  | 'IDEMPOTENCY_KEY_REUSED';
 
 export interface ApiError {
   statusCode: number;

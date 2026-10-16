@@ -12,6 +12,7 @@ const base: RequestWithRelations = {
   reviewedById: null,
   reviewedAt: null,
   approvedAt: null,
+  idempotencyKey: null,
   createdAt: new Date('2026-10-01T02:03:04.005Z'),
   updatedAt: new Date('2026-10-01T02:03:04.005Z'),
   requester: { id: 'a0000000-0000-4000-8000-000000000002', name: 'Employee One' },

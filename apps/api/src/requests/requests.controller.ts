@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, ParseUUIDPipe, Patch, Post, Query, Res } from '@nestjs/common';
 import type { EquipmentRequest, Paginated, RequestDetail } from '@app/shared';
+import type { Response } from 'express';
 import type { AuthUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -9,14 +10,30 @@ import { MyRequestsQueryDto } from './dto/my-requests-query.dto';
 import { RejectRequestDto } from './dto/reject-request.dto';
 import { RequestsService } from './requests.service';
 
+const idempotencyKeyPipe = new ParseUUIDPipe({ optional: true });
+
 @Controller('requests')
 export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
   @Post()
   @Roles('EMPLOYEE')
-  create(@Body() dto: CreateRequestDto, @CurrentUser() user: AuthUser): Promise<EquipmentRequest> {
-    return this.requestsService.create(dto, user);
+  async create(
+    @Body() dto: CreateRequestDto,
+    @CurrentUser() user: AuthUser,
+    @Headers('idempotency-key') idempotencyKeyHeader: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<EquipmentRequest> {
+    // @Headers() takes no pipes in Nest 11, so the pipe runs here; a missing header stays undefined.
+    const validated: unknown =
+      idempotencyKeyHeader === undefined ? undefined : await idempotencyKeyPipe.transform(idempotencyKeyHeader, { type: 'custom' });
+    const idempotencyKey = typeof validated === 'string' ? validated : undefined;
+    const { request, replayed } = await this.requestsService.create(dto, user, idempotencyKey);
+    if (replayed) {
+      res.status(200);
+      res.setHeader('Idempotent-Replayed', 'true');
+    }
+    return request;
   }
 
   // Must stay above ':id' so "me" is never captured as an id.

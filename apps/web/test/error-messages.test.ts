@@ -16,10 +16,11 @@ const ALL_CODES: ErrorCode[] = [
   'TOO_MANY_REQUESTS',
   'INTERNAL_ERROR',
   'DUPLICATE_EQUIPMENT_NAME',
+  'IDEMPOTENCY_KEY_REUSED',
 ];
 
 describe('ERROR_TITLE', () => {
-  it('has a non-empty Thai title for each of the twelve codes and nothing else', () => {
+  it('has a non-empty Thai title for each of the thirteen codes and nothing else', () => {
     expect(Object.keys(ERROR_TITLE).sort()).toEqual([...ALL_CODES].sort());
     for (const code of ALL_CODES) expect(ERROR_TITLE[code].trim().length).toBeGreaterThan(0);
   });

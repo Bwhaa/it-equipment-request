@@ -71,6 +71,7 @@
   `pnpm --filter api db:reset` in their own terminal.
 - Every request status change writes an AuditLog row in the SAME transaction,
   via `AuditLogService.log(tx, ...)` (create: null → PENDING).
+- `POST /requests` accepts an optional `Idempotency-Key` header (UUID). The replay lookup runs BEFORE the stock checks; a replay returns 200 + `Idempotent-Replayed: true`, writes no row and no audit log; the same key with a different payload is `422 IDEMPOTENCY_KEY_REUSED`. Uniqueness is `(requester_id, idempotency_key)` in the database and a `P2002` is handled OUTSIDE the transaction.
 - Seed data lives ONLY in `seed(prisma)` in `apps/api/prisma/seed-data.ts` (fixed UUIDs +
   `upsert` with `update: {}`, no top-level side effects). `prisma/seed.ts` is only the CLI
   runner; e2e imports from `seed-data.ts`. Never write a second seed.
@@ -147,6 +148,7 @@
 - Never run `rm` with a variable that could be empty or unquoted: use a literal path or `"${VAR:?}"`.
 - Never commit `.env` or secrets.
 - A migration that adds something Prisma cannot model is written by hand and verified with `prisma migrate diff` against a throwaway shadow database; it is never applied to the dev database by an AI agent (the container entrypoint applies it on the user's next `docker compose up --build`).
+- A column that Prisma can model is added in `schema.prisma`; its migration SQL comes from `prisma migrate diff` against a shadow database and is saved by hand (never `migrate dev` against the dev database).
 - Verify Docker changes in a throwaway compose project named `itreq-verify` built from a copy of the git-visible files; never test on the user's project or volume. `docker compose -p itreq-verify down` and `docker volume rm itreq-verify_db_data` are allowed ONLY for that project; `down -v`, `db:reset` and migrate reset stay forbidden everywhere else.
 - End every task with: files changed, commands run + results, acceptance criteria
   checked one by one, open questions, follow-ups.

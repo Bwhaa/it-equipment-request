@@ -12,6 +12,7 @@ export const ERROR_TITLE: Record<ErrorCode, string> = {
   VERSION_CONFLICT: 'ข้อมูลถูกแก้ไขระหว่างนี้',
   DUPLICATE_EQUIPMENT_NAME: 'ชื่ออุปกรณ์นี้ถูกใช้แล้ว',
   EQUIPMENT_UNAVAILABLE: 'ไม่สามารถเบิกอุปกรณ์นี้ได้ในขณะนี้',
+  IDEMPOTENCY_KEY_REUSED: 'คีย์ป้องกันการส่งซ้ำถูกใช้กับข้อมูลที่ต่างกัน กรุณาโหลดหน้านี้ใหม่แล้วลองอีกครั้ง',
   TOO_MANY_REQUESTS: 'ทำรายการบ่อยเกินไป กรุณาลองใหม่ภายหลัง',
   INTERNAL_ERROR: 'ระบบขัดข้อง กรุณาลองใหม่',
 };

@@ -12,6 +12,7 @@ const ERROR_CODES: Record<ErrorCode, true> = {
   VERSION_CONFLICT: true,
   DUPLICATE_EQUIPMENT_NAME: true,
   EQUIPMENT_UNAVAILABLE: true,
+  IDEMPOTENCY_KEY_REUSED: true,
   TOO_MANY_REQUESTS: true,
   INTERNAL_ERROR: true,
 };
