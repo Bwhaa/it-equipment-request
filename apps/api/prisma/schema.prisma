@@ -1,0 +1,103 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  EMPLOYEE
+  ADMIN
+
+  @@map("role")
+}
+
+enum EquipmentStatus {
+  ACTIVE
+  INACTIVE
+
+  @@map("equipment_status")
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("request_status")
+}
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  name         String   @db.VarChar(120)
+  role         Role
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  requests         Request[]  @relation("RequestRequester")
+  reviewedRequests Request[]  @relation("RequestReviewer")
+  auditLogs        AuditLog[]
+
+  @@map("users")
+}
+
+model Equipment {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String          @db.VarChar(120)
+  category      String          @db.VarChar(60)
+  stockQuantity Int             @map("stock_quantity")
+  status        EquipmentStatus @default(ACTIVE)
+  version       Int             @default(1)
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  requests Request[]
+
+  @@index([status])
+  @@map("equipments")
+}
+
+model Request {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requesterId  String        @map("requester_id") @db.Uuid
+  equipmentId  String        @map("equipment_id") @db.Uuid
+  quantity     Int
+  reason       String        @db.Text
+  status       RequestStatus @default(PENDING)
+  rejectReason String?       @map("reject_reason") @db.Text
+  reviewedById String?       @map("reviewed_by_id") @db.Uuid
+  reviewedAt   DateTime?     @map("reviewed_at") @db.Timestamptz(3)
+  approvedAt   DateTime?     @map("approved_at") @db.Timestamptz(3)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  requester User       @relation("RequestRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+  reviewer  User?      @relation("RequestReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+  equipment Equipment  @relation(fields: [equipmentId], references: [id], onDelete: Restrict)
+  auditLogs AuditLog[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([requesterId, createdAt(sort: Desc)])
+  @@index([equipmentId])
+  @@map("requests")
+}
+
+model AuditLog {
+  id         String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId  String         @map("request_id") @db.Uuid
+  actorId    String         @map("actor_id") @db.Uuid
+  fromStatus RequestStatus? @map("from_status")
+  toStatus   RequestStatus  @map("to_status")
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  request Request @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  actor   User    @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([requestId, createdAt])
+  @@map("audit_logs")
+}
