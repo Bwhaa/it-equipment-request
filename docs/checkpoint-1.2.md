@@ -126,6 +126,7 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 - **Ownership check (ใน service):** Employee เรียก `GET /requests/:id` ของคนอื่น → `404` (ไม่ใช้ 403 เพื่อไม่เปิดเผยว่า id มีอยู่จริง)
 - **`requester_id` มาจาก `req.user.sub` เสมอ** ไม่รับจาก body
 - **Validation:** `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true })` + class-validator ทุก DTO; `ParseUUIDPipe` กับทุก `:id`
+- **ข้อความที่เก็บไม่ได้:** ทุก string ที่เข้ามาใน body/query/params (รวมค่าซ้อนและชื่อ property) ที่มี `\u0000` หรือ surrogate เดี่ยว (unpaired surrogate) ถูกปฏิเสธด้วย `400 VALIDATION_ERROR` ก่อนถึง ValidationPipe เพราะ Postgres/Prisma รับไม่ได้ ไม่งั้นกลายเป็น 500; อีเมลตอน login ถูก trim และแปลงเป็นตัวพิมพ์เล็กก่อนตรวจและค้นหา
 - **Login rate limit:** นับเฉพาะการ login ที่ล้มเหลว (รหัสผิด/ไม่พบ email) ต่อ email (แปลงเป็นตัวพิมพ์เล็ก) เกิน 10 ครั้งใน 15 นาที (ตั้งค่าได้ด้วย env) → `429 TOO_MANY_REQUESTS` พร้อม header `Retry-After`; login สำเร็จล้างตัวนับของ email นั้น; จำกัดต่อ IP **ปิดเป็นค่าเริ่มต้น** (การป้องกันหลักคือต่อ email) และทำงานเฉพาะเมื่อตั้ง `TRUST_PROXY` **และ** request มี `X-Forwarded-For`; Next จะตั้ง `X-Forwarded-For` เป็น IP ของ TCP peer ที่เรียกมาเสมอเมื่อ client ไม่ส่งมา (ถ้า client ส่งมาเองจะส่งผ่านไปตามเดิม ไม่ต่อท้ายและไม่แทนที่) และ BFF ส่งต่อให้ API; จึงตั้ง `TRUST_PROXY` เฉพาะเมื่อมี reverse proxy ที่เชื่อถือได้เป็นผู้ตั้งหรือเขียนทับ `X-Forwarded-For` ไม่งั้น client ปลอมค่านี้เพื่อเลี่ยงหรือล็อกคนอื่นได้ และใน Docker/WSL ในเครื่องทุก browser เห็นเป็น IP gateway เดียวกัน ทำให้ใช้โควตา IP ร่วมกันจนทุกคนถูกล็อก; เก็บในหน่วยความจำ (รีสตาร์ตแล้วหาย) พอสำหรับ instance เดียว
 
 **Frontend = BFF (Backend-for-Frontend):** token อยู่ใน httpOnly cookie ซึ่ง JS ฝั่ง browser อ่านไม่ได้ จึงไม่ให้ browser เรียก NestJS ตรง
@@ -189,20 +190,20 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 
 | DTO | Field | Rule |
 | --- | --- | --- |
-| LoginDto | email / password | `@IsEmail()` / `@IsString() @MinLength(6)` |
+| LoginDto | email / password | `@Transform(trim + toLowerCase) @IsEmail()` / `@IsString() @MinLength(6) @MaxLength(128)` |
 | CreateEquipmentDto | name | `@IsString() @Transform(trim) @Length(1, 120)` |
 | | category | `@IsString() @Transform(trim) @Length(1, 60)` |
 | | stockQuantity | `@IsInt() @Min(0) @Max(100000)` — กัน int overflow |
 | | status | `@ValidateIf((_o, value) => value !== undefined) @IsEnum(EquipmentStatus)` — **ไม่ใส่ default ใน DTO** ให้ Prisma `@default(ACTIVE)` จัดการ; ไม่ใช้ `@IsOptional()` เพราะปล่อย `null` ผ่านไปถึง Prisma (ได้ 500) ส่วนนี้ `status: null` ได้ 400 |
 | UpdateEquipmentDto | ทุก field | `PartialType(CreateEquipmentDto)` — ต้องมีอย่างน้อย 1 field นอกจาก `version`; ค่า `null` ของ field ใด → `400` (`PartialType` ทำให้ทุก field เป็น optional ซึ่งปล่อย `null` ผ่าน) |
-| | version | `@IsInt() @Min(1)` — **บังคับ** (optimistic lock) |
+| | version | `@IsInt() @Min(1) @Max(2147483647)` — **บังคับ** (optimistic lock) (ค่าสูงสุดของ Int 32 บิตในฐานข้อมูล เกินแล้วต้องเป็น 400 ไม่ใช่ 500) |
 | CreateRequestDto | equipmentId | `@IsUUID()` |
 | | quantity | `@IsInt() @Min(1) @Max(100)` — กัน 0, ติดลบ, ทศนิยม |
 | | reason | `@IsString() @Transform(trim) @Length(5, 500)` |
 | RejectRequestDto | rejectReason | `@IsString() @Transform(trim) @Length(5, 500)` |
-| PaginationQuery | page / limit | `@Type(() => Number) @IsInt() @Min(1)` default 1 / `@Type(() => Number) @IsInt() @Min(1) @Max(100)` default 10 — query string มาเป็น string |
+| PaginationQuery | page / limit | `@Type(() => Number) @IsInt() @Min(1) @Max(100000)` default 1 / `@Type(() => Number) @IsInt() @Min(1) @Max(100)` default 10 — query string มาเป็น string |
 | | search | `@IsOptional() @IsString() @Transform(trim) @MaxLength(100)` |
-| EquipmentQuery | category | `@IsOptional() @IsString() @MaxLength(60)` |
+| EquipmentQuery | category | `@IsOptional() @IsString() @Transform(trim) @MaxLength(60)` |
 | | status | `@IsOptional() @IsEnum(EquipmentStatus)` (ADMIN เท่านั้นที่มีผล) |
 | RequestQuery | status | `@IsOptional() @IsEnum(RequestStatus)` |
 | | sort | `@IsOptional() @IsIn(['createdAt:desc', 'createdAt:asc'])` default `createdAt:desc` — whitelist แล้ว map เป็น `orderBy` เอง ไม่ส่งชื่อฟิลด์จาก client เข้า Prisma ตรงๆ |
