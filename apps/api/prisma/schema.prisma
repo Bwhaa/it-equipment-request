@@ -59,6 +59,7 @@ model Equipment {
   requests Request[]
 
   @@index([status])
+  @@index([name, id])
   @@map("equipments")
 }
 
@@ -85,6 +86,7 @@ model Request {
   @@index([status, createdAt(sort: Desc)])
   @@index([requesterId, createdAt(sort: Desc)])
   @@index([equipmentId])
+  @@index([createdAt(sort: Desc), id(sort: Desc)])
   @@unique([requesterId, idempotencyKey])
   @@map("requests")
 }

@@ -144,6 +144,7 @@
 - Conventional Commits, using the commit message given in the task.
   1 task = 1 commit (a few at most, all with the same scope).
 - Do not edit `docs/` or this file unless the task says so.
+- A new index is added only when EXPLAIN on synthetic data (at least 50,000 equipments / 100,000 requests) shows it is used and clearly faster; put the numbers in the commit message body.
 - Long-running processes (dev servers): start them with `setsid`, remember the process group id, stop with `kill -TERM -- -<pgid>`, and before finishing check `ss -ltn` shows ports 3000/3001 free and `pgrep -fa 'nest|next'` shows nothing from this repo.
 - Smoke tests against the dev API are read-only (GET + login only). Anything that creates or changes data runs in e2e on the test database.
 - Never run `rm` with a variable that could be empty or unquoted: use a literal path or `"${VAR:?}"`.

@@ -112,6 +112,8 @@ ALTER TABLE requests   ADD CONSTRAINT chk_reject_reason
 | `requests(requester_id, idempotency_key)` UNIQUE | กันสร้างคำขอซ้ำจากการส่งซ้ำ (key เป็น NULL ได้ ซ้ำได้) |
 | `audit_logs(request_id, created_at)` | timeline ของคำขอ |
 | `equipments(status)` | รายการอุปกรณ์ฝั่ง Employee |
+| `equipments(name, id)` | หน้ารายการอุปกรณ์เรียงตาม name, id (วัดแล้วลดเวลา 99x ที่ 50,000 แถว) |
+| `requests(created_at DESC, id DESC)` | หน้ารายการคำขอของ Admin ที่ไม่กรองสถานะ (วัดแล้วลดเวลา 111x ที่ 100,000 แถว) |
 | `equipments(lower(btrim(name)))` UNIQUE | ชื่ออุปกรณ์ห้ามซ้ำ (ไม่สนตัวพิมพ์ใหญ่เล็กและช่องว่างหัวท้าย รวมรายการที่ปิดใช้งาน); Prisma ไม่รู้จัก index แบบนี้ จึงสร้างด้วย SQL ใน migration |
 
 ค้นหาด้วย `ILIKE` บนชื่ออุปกรณ์/ชื่อผู้ขอเพียงพอสำหรับขนาดข้อมูลนี้; ถ้าโตมากค่อยเพิ่ม `pg_trgm` GIN index
