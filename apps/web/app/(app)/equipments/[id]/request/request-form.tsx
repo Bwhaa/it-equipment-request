@@ -1,8 +1,9 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Alert } from '@/components/ui/alert';
+import { useFocusFirstError } from '@/components/use-focus-first-error';
 import { Button } from '@/components/ui/button';
 import { ERROR_TITLE, errorMessages } from '@/lib/error-messages';
 import { validateRequestForm } from '@/lib/request-form';
@@ -10,6 +11,8 @@ import type { RequestFormFieldErrors } from '@/lib/request-form';
 import { createRequestAction } from './actions';
 import { initialRequestFormState } from './state';
 import { FORM_INPUT_CLASS } from '@/lib/ui-classes';
+
+const FOCUS_ORDER = ['quantity', 'reason'] as const;
 
 export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: string; stockQuantity: number }) {
   const [state, formAction, pending] = useActionState(createRequestAction, initialRequestFormState);
@@ -19,6 +22,8 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
 
   const fieldErrors: RequestFormFieldErrors = clientErrors ?? (state.ok ? {} : (state.fieldErrors ?? {}));
   const apiError = state.ok ? undefined : state.error;
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstError(fieldErrors, FOCUS_ORDER, formRef);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     const data = new FormData(event.currentTarget);
@@ -33,7 +38,7 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
   }
 
   return (
-    <form action={formAction} onSubmit={onSubmit} noValidate className="space-y-4">
+    <form ref={formRef} action={formAction} onSubmit={onSubmit} noValidate className="space-y-4">
       <input type="hidden" name="equipmentId" value={equipmentId} />
 
       {apiError && (

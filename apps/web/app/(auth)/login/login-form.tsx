@@ -1,12 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useFocusFirstError } from '@/components/use-focus-first-error';
 import { retryAfterMinutes } from '@/lib/retry-after';
 import { ROLE_HOME, isRole } from '@/lib/roles';
 import { FORM_INPUT_CLASS } from '@/lib/ui-classes';
 
+const FOCUS_ORDER = ['email', 'password'] as const;
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function readRole(body: unknown): string | undefined {
@@ -20,8 +22,12 @@ export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState<string>();
-  const [passwordError, setPasswordError] = useState<string>();
+  // One object per failed submit: a new object is what moves the focus again (see useFocusFirstError).
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const emailError = errors.email;
+  const passwordError = errors.password;
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstError(errors, FOCUS_ORDER, formRef);
   const [banner, setBanner] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
 
@@ -31,8 +37,7 @@ export function LoginForm() {
 
     const nextEmailError = EMAIL_SHAPE.test(email.trim()) ? undefined : 'กรุณากรอกอีเมลให้ถูกต้อง';
     const nextPasswordError = password.length >= 6 ? undefined : 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-    setEmailError(nextEmailError);
-    setPasswordError(nextPasswordError);
+    setErrors({ email: nextEmailError, password: nextPasswordError });
     if (nextEmailError || nextPasswordError) return;
 
     setSubmitting(true);
@@ -72,7 +77,7 @@ export function LoginForm() {
   return (
     // The inputs deliberately have no `name`: a native submit before hydration (or without JS) is a GET that
     // would put the credentials in the URL; without names it sends nothing. The state below holds the values.
-    <form onSubmit={onSubmit} noValidate className="space-y-4">
+    <form ref={formRef} onSubmit={onSubmit} noValidate className="space-y-4">
       {banner && (
         <p role="alert" className="rounded border border-red-400 bg-red-50 p-2 text-sm text-red-800">
           {banner}
