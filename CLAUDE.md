@@ -18,6 +18,7 @@
 - Do not upgrade majors (Next 16, Prisma 7, ...) or add packages not in the plan without asking.
 - `TRUST_PROXY` stays unset by default: the per-IP login limit is OFF and the per-email limit is the primary protection. Next ALWAYS sets `X-Forwarded-For` (the TCP peer of its caller) when the client sent none, passes a client-sent value through unchanged, and the BFF forwards it to the API. Set `TRUST_PROXY` only when a trusted reverse proxy overwrites or sets `X-Forwarded-For`; otherwise a client can spoof it, and in local Docker/WSL all browsers share the gateway address so one shared bucket would lock everybody out. Never add TRUST_PROXY to the user's `.env`.
 - Containers run as the non-root `node` user; the web container receives only the variables it needs (no DATABASE_URL); the image never contains any env file; `.sh` files and Dockerfiles use LF line endings (`.gitattributes`).
+- `db`, `api` and `web` containers use `restart: unless-stopped`. A crash loop (`docker compose ps` shows Restarting) means: read `docker compose logs api`; `docker compose stop` keeps them stopped.
 
 ## Git
 - `main` holds only the initial commit. `develop` is the SUBMITTED state (tag `submission-v1`, PR #1 `develop` → `main`). Never commit to, push to, rebase, or merge into `develop` or `main`.

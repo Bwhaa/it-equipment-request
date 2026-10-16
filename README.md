@@ -23,6 +23,8 @@ docker compose up --build   # ใส่ -d เพื่อรันเบื้�
 
 ถ้า `JWT_SECRET` สั้นกว่า 32 ตัวอักษร API จะไม่ยอมเริ่มทำงาน (ตั้งใจให้เป็นเช่นนั้น) และ API จะไม่เริ่มเมื่อ `JWT_SECRET` ยังเป็นค่าตัวอย่างจาก `.env.example` (container จะหยุดและ log ระบุชื่อ `JWT_SECRET`)
 
+คอนเทนเนอร์ db, api และ web ตั้ง `restart: unless-stopped` จึงกลับมาทำงานเองหลังรีสตาร์ต Docker หรือเมื่อโปรเซสล้ม; ถ้าเห็น api วนรีสตาร์ต (`docker compose ps` แสดง Restarting) ให้ดู `docker compose logs api` (สาเหตุที่พบบ่อย: `JWT_SECRET` ยังเป็นค่าตัวอย่าง หรือ migration ล้มเพราะข้อมูลเดิมมีชื่ออุปกรณ์ซ้ำกัน); `docker compose stop` และ `down` หยุดแล้วจะไม่ขึ้นเองจนกว่าจะสั่ง `up`
+
 ## 3. บัญชีทดสอบ
 
 | Email | Password | Role |
