@@ -1,15 +1,16 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { useFocusFirstError } from '@/components/use-focus-first-error';
 import type { ApprovalBlock } from '@/lib/approval';
 import { ERROR_TITLE, errorMessages } from '@/lib/error-messages';
 import { approveRequestAction, rejectRequestAction } from './actions';
 import { initialReviewActionState } from './state';
+import { FORM_INPUT_CLASS } from '@/lib/ui-classes';
 
-const inputClass =
-  'w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+const FOCUS_ORDER = ['reason'] as const;
 
 /**
  * Stays mounted after the request has been reviewed (`reviewed`), so an error returned by a stale
@@ -23,6 +24,8 @@ export function ReviewPanel({ id, block, reviewed }: { id: string; block: Approv
   const apiError = approveState.error ?? rejectState.error;
   const reasonError = rejectState.fieldErrors?.reason;
   const busy = approving || rejecting;
+  const rejectFormRef = useRef<HTMLFormElement>(null);
+  useFocusFirstError(rejectState.fieldErrors, FOCUS_ORDER, rejectFormRef);
 
   return (
     <div className="space-y-4">
@@ -52,7 +55,7 @@ export function ReviewPanel({ id, block, reviewed }: { id: string; block: Approv
 
           <details className="rounded border border-neutral-300 p-3 dark:border-neutral-700" open={Boolean(reasonError) || undefined}>
             <summary className="cursor-pointer text-sm font-medium">ปฏิเสธคำขอ</summary>
-            <form action={rejectAction} className="mt-3 space-y-3">
+            <form ref={rejectFormRef} action={rejectAction} className="mt-3 space-y-3">
               <input type="hidden" name="id" value={id} />
               <div>
                 <label htmlFor="reason" className="mb-1 block text-sm font-medium">
@@ -67,13 +70,13 @@ export function ReviewPanel({ id, block, reviewed }: { id: string; block: Approv
                   onChange={(event) => setReasonLength(event.target.value.length)}
                   aria-invalid={reasonError ? true : undefined}
                   aria-describedby={reasonError ? 'reason-count reason-error' : 'reason-count'}
-                  className={inputClass}
+                  className={FORM_INPUT_CLASS}
                 />
                 <p id="reason-count" className="mt-1 text-right text-xs text-neutral-600 dark:text-neutral-400">
                   {reasonLength}/500
                 </p>
                 {reasonError && (
-                  <p id="reason-error" className="mt-1 text-sm text-red-700">
+                  <p id="reason-error" className="mt-1 text-sm text-red-700 dark:text-red-400">
                     {reasonError}
                   </p>
                 )}

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { PasswordService } from '../src/auth/password.service';
 import { USER_IDS } from '../prisma/seed-data';
 import request from 'supertest';
@@ -204,6 +206,20 @@ describe('boot refusal', () => {
 
   it('32-character JWT_SECRET -> boots', async () => {
     process.env.JWT_SECRET = 's'.repeat(32);
+    const booted = await createTestApp();
+    await booted.app.close();
+  });
+
+  it('the placeholder from .env.example -> rejects mentioning JWT_SECRET', async () => {
+    const line = readFileSync(join(__dirname, '../../../.env.example'), 'utf8')
+      .split('\n')
+      .find((candidate) => candidate.startsWith('JWT_SECRET='));
+    process.env.JWT_SECRET = (line ?? '').slice('JWT_SECRET='.length).trim();
+    await expect(createTestApp()).rejects.toThrow(/JWT_SECRET/);
+  });
+
+  it('a random 64-hex JWT_SECRET -> boots', async () => {
+    process.env.JWT_SECRET = 'a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90';
     const booted = await createTestApp();
     await booted.app.close();
   });

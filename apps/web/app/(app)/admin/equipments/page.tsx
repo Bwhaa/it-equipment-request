@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { Equipment, Paginated } from '@app/shared';
 import Link from 'next/link';
 import { Alert } from '@/components/ui/alert';
@@ -9,6 +10,9 @@ import { apiFetch } from '@/lib/api';
 import { EQUIPMENT_STATUS_LABEL } from '@/lib/format';
 import { buildHref, parseCategory, parseEquipmentStatus, parsePage, parseSearch } from '@/lib/list-params';
 import type { SearchParamValue } from '@/lib/list-params';
+import { FILTER_INPUT_CLASS } from '@/lib/ui-classes';
+
+export const metadata: Metadata = { title: 'จัดการอุปกรณ์' };
 
 const PAGE_SIZE = 10;
 const BASE_PATH = '/admin/equipments';
@@ -16,8 +20,6 @@ const DONE_NOTICE: Record<string, string> = {
   created: 'เพิ่มอุปกรณ์เรียบร้อยแล้ว',
   updated: 'บันทึกการแก้ไขเรียบร้อยแล้ว',
 };
-const inputClass =
-  'rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
 
 export default async function AdminEquipmentsPage({
   searchParams,
@@ -59,13 +61,13 @@ export default async function AdminEquipmentsPage({
           <label htmlFor="search" className="mb-1 block text-sm font-medium">
             ค้นหาชื่ออุปกรณ์
           </label>
-          <input id="search" name="search" type="search" maxLength={100} defaultValue={search ?? ''} className={`${inputClass} w-56`} />
+          <input id="search" name="search" type="search" maxLength={100} defaultValue={search ?? ''} className={`${FILTER_INPUT_CLASS} w-56`} />
         </div>
         <div>
           <label htmlFor="category" className="mb-1 block text-sm font-medium">
             หมวดหมู่
           </label>
-          <select id="category" name="category" defaultValue={category ?? ''} className={inputClass}>
+          <select id="category" name="category" defaultValue={category ?? ''} className={FILTER_INPUT_CLASS}>
             <option value="">ทุกหมวดหมู่</option>
             {categories.map((name) => (
               <option key={name} value={name}>
@@ -78,7 +80,7 @@ export default async function AdminEquipmentsPage({
           <label htmlFor="status" className="mb-1 block text-sm font-medium">
             สถานะ
           </label>
-          <select id="status" name="status" defaultValue={status ?? ''} className={inputClass}>
+          <select id="status" name="status" defaultValue={status ?? ''} className={FILTER_INPUT_CLASS}>
             <option value="">ทุกสถานะ</option>
             <option value="ACTIVE">{EQUIPMENT_STATUS_LABEL.ACTIVE}</option>
             <option value="INACTIVE">{EQUIPMENT_STATUS_LABEL.INACTIVE}</option>

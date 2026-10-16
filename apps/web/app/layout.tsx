@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ระบบเบิกอุปกรณ์ไอที',
+  title: { default: 'ระบบเบิกอุปกรณ์ไอที', template: '%s | ระบบเบิกอุปกรณ์ไอที' },
   description: 'ระบบขอเบิกและอนุมัติอุปกรณ์ไอทีภายในองค์กร',
 };
 

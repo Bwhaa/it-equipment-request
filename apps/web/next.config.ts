@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { loadEnvConfig } from '@next/env';
 import type { NextConfig } from 'next';
+import { SECURITY_HEADERS } from './lib/security-headers';
 
 // Load the ROOT .env for dev, build and start (cwd is apps/web for every pnpm --filter script).
 // forceReload is required: Next has already loaded (and cached) the env of apps/web itself, which has no .env files.
@@ -8,8 +9,12 @@ import type { NextConfig } from 'next';
 loadEnvConfig(path.resolve(process.cwd(), '../..'), process.env.NODE_ENV !== 'production', console, true);
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   output: process.env.NEXT_OUTPUT === 'standalone' ? 'standalone' : undefined,
   outputFileTracingRoot: path.join(__dirname, '../..'),
+  async headers() {
+    return [{ source: '/:path*', headers: SECURITY_HEADERS.map((header) => ({ ...header })) }];
+  },
 };
 
 export default nextConfig;

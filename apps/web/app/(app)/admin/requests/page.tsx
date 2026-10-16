@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { EquipmentRequest, Paginated, RequestStatus } from '@app/shared';
 import Link from 'next/link';
 import { Badge, StatusBadge } from '@/components/ui/badge';
@@ -9,6 +10,9 @@ import { getApprovalBlock } from '@/lib/approval';
 import { STATUS_LABEL, formatDateTime } from '@/lib/format';
 import { buildHref, parsePage, parseRequestStatus, parseSearch, parseSort } from '@/lib/list-params';
 import type { SearchParamValue } from '@/lib/list-params';
+import { FILTER_INPUT_CLASS } from '@/lib/ui-classes';
+
+export const metadata: Metadata = { title: 'คำขอทั้งหมด' };
 
 const PAGE_SIZE = 10;
 const BASE_PATH = '/admin/requests';
@@ -19,8 +23,6 @@ const TABS: { label: string; status: RequestStatus | undefined }[] = [
   { label: STATUS_LABEL.REJECTED, status: 'REJECTED' },
 ];
 const BLOCK_BADGE = { EQUIPMENT_INACTIVE: 'อุปกรณ์ปิดใช้งาน', INSUFFICIENT_STOCK: 'สต็อกไม่พอ' } as const;
-const inputClass =
-  'rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
 
 export default async function AdminRequestsPage({
   searchParams,
@@ -69,13 +71,13 @@ export default async function AdminRequestsPage({
           <label htmlFor="search" className="mb-1 block text-sm font-medium">
             ค้นหาจากชื่ออุปกรณ์หรือชื่อผู้ขอ
           </label>
-          <input id="search" name="search" type="search" maxLength={100} defaultValue={search ?? ''} className={`${inputClass} w-64`} />
+          <input id="search" name="search" type="search" maxLength={100} defaultValue={search ?? ''} className={`${FILTER_INPUT_CLASS} w-64`} />
         </div>
         <div>
           <label htmlFor="sort" className="mb-1 block text-sm font-medium">
             เรียงตาม
           </label>
-          <select id="sort" name="sort" defaultValue={sort} className={inputClass}>
+          <select id="sort" name="sort" defaultValue={sort} className={FILTER_INPUT_CLASS}>
             <option value="createdAt:desc">ใหม่ไปเก่า</option>
             <option value="createdAt:asc">เก่าไปใหม่</option>
           </select>

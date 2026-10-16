@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { ApiRequestError, isApiError, makeApiError } from './api-error';
 import { AUTH_COOKIE } from './auth-constants';
 import { getApiUrl } from './env';
+import { API_TIMEOUT_MS } from './http-constants';
 
 export interface ApiFetchOptions {
   method?: string;
@@ -34,7 +35,7 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
       headers,
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
       cache: 'no-store',
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
   } catch {
     throw new ApiRequestError(503, makeApiError(503, 'INTERNAL_ERROR', 'Cannot reach the API'));

@@ -20,11 +20,11 @@
 - Containers run as the non-root `node` user; the web container receives only the variables it needs (no DATABASE_URL); the image never contains any env file; `.sh` files and Dockerfiles use LF line endings (`.gitattributes`).
 
 ## Git
-- `main` holds only the initial commit until submission. All work happens on `develop`.
-- Never commit to, push to, rebase, or merge into `main`, except the initial commit in task 1.
-- Do not push and do not add remotes; the user pushes. Never force-push.
-- The user opens one PR `develop` → `main` at submission. It must NOT be squash-merged
-  (merge commit or rebase only) so the per-feature commits survive.
+- `main` holds only the initial commit. `develop` is the SUBMITTED state (tag `submission-v1`, PR #1 `develop` → `main`). Never commit to, push to, rebase, or merge into `develop` or `main`.
+- All new work happens on `upgrade/v2` (created from `develop` at `submission-v1`) as NEW commits. Never rebase, amend or force-push anything that has already been pushed.
+- Do not push and do not add remotes; the user pushes.
+- The user opens PR #2 `upgrade/v2` → `develop` (stacked on PR #1; it is retargeted to `main` after PR #1 is merged). Neither PR may be squash-merged (merge commit or rebase only) so the per-feature commits survive.
+- A commit that changes the schema, a Dockerfile or docker-compose.yml is pushed only after the full e2e suite and a from-scratch `docker compose build --no-cache` on a clean clone have passed (the user runs the clone check).
 
 ## Commands
 - `docker compose up -d db`
@@ -47,6 +47,11 @@
   `ParseUUIDPipe` on every `:id`. Global `ValidationPipe({ whitelist: true,
   forbidNonWhitelisted: true, transform: true })`. Numeric query fields use `@Type(() => Number)`.
 - String inputs use the safe `trim` from `src/common/transforms.ts` (§4.4).
+- Every string that arrives in a request (body, query, params, including nested values and property names) that contains text which cannot be stored (a NUL character, or an unpaired UTF-16 surrogate) is rejected with `400 VALIDATION_ERROR`: `RejectNulCharactersPipe` runs before the `ValidationPipe` in `configureApp`. Never remove or reorder it.
+- The placeholder JWT_SECRET from `.env.example` is rejected at startup by both the API and the web app (prefix `change-me`/`replace-me`). Never weaken that check.
+- Security headers: Next sets them from `apps/web/lib/security-headers.ts`; the API disables `x-powered-by` and sets `nosniff` and `no-store`. CSP stays limited to `frame-ancestors`; HSTS belongs to the TLS proxy.
+- Error codes written as string literals in the API must be keys of `ERROR_STATUS` (enforced by `error-code-literals.spec.ts`, including conditional expressions).
+- Every `@IsInt()` has a `@Max(...)` that fits the database column and every `@IsString()` has a length limit (`@MaxLength`/`@Length`); out-of-range or oversized input must be a 400, never a 500. `dto-limits.spec.ts` enforces it for DTOs.
 - Every thrown error is `new XxxException({ code, message })` with a `code` from the
   `ErrorCode` type (§6). Unexpected errors become `500 INTERNAL_ERROR` with a generic
   message; the stack is logged server-side with the request id, never sent to the client.
@@ -109,6 +114,8 @@
   latest values in the form, not just a toast. Disable "request" when stock = 0
   and show "หมด"; disable Approve + show a warning when equipment is INACTIVE or stock < qty.
 - A file with `'use server'` exports ONLY async functions; keep state types, initial state and constants in separate files. A Server Action catches only `ApiRequestError` and never wraps `redirect()` or `notFound()` in a try/catch that swallows them.
+- Every page exports `metadata` with a title; every `loading.tsx` root has `role="status"` and an sr-only text; every `text-red-600/700` has a `dark:text-red-300/400` variant (enforced by tests).
+- Credential inputs in client-handled forms carry no `name` attribute: a native submit before hydration must not put the password in the URL.
 - Client-side validation must never be stricter than the server and must not decide business rules the API owns (for example, the stock check is a soft check made by the API: quantities above the stock are allowed to reach it).
 - Dates are shown with `formatDateTime` in `lib/format.ts` (Asia/Bangkok, Gregorian years) so server and client render the same text.
 - Pages with a `loading.tsx` stream, so `notFound()` renders the not-found content with HTTP 200 (verified on the production build). Authorization and 404 semantics are enforced and tested at the API level (e2e); do not assert a 404 status for web pages.
@@ -126,6 +133,7 @@
 - Each feature task adds e2e tests for its own acceptance criteria.
 - Never delete or skip (`.skip`, `xit`) an existing test to make the gate pass.
 - Web unit tests use vitest in the node environment (`apps/web/test`); `pnpm test` runs them together with the API unit tests. Pages and components are verified with the curl smoke checks in the task acceptance.
+- Web UI states are covered by `renderToString` snapshot tests in `apps/web/test`. A snapshot change must be reviewed in the commit that causes it; a refactor commit must leave every snapshot untouched.
 
 ## Workflow
 - Do only the current task's scope. Found something outside it? List it under

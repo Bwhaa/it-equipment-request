@@ -1,8 +1,9 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Alert } from '@/components/ui/alert';
+import { useFocusFirstError } from '@/components/use-focus-first-error';
 import { Button } from '@/components/ui/button';
 import { validateEquipmentForm } from '@/lib/equipment-form';
 import type { EquipmentFormFieldErrors } from '@/lib/equipment-form';
@@ -11,9 +12,9 @@ import { EQUIPMENT_STATUS_LABEL } from '@/lib/format';
 import { createEquipmentAction, updateEquipmentAction } from './actions';
 import { initialEquipmentFormState } from './state';
 import type { EquipmentFormValues } from './state';
+import { FORM_INPUT_CLASS } from '@/lib/ui-classes';
 
-const inputClass =
-  'w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+const FOCUS_ORDER = ['name', 'category', 'stockQuantity', 'status'] as const;
 
 interface Props {
   mode: 'create' | 'edit';
@@ -59,6 +60,8 @@ export function EquipmentForm({ mode, initial }: Props) {
 
   const fieldErrors: EquipmentFormFieldErrors = clientErrors ?? state.fieldErrors ?? {};
   const apiError = state.error;
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstError(fieldErrors, FOCUS_ORDER, formRef);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     const data = new FormData(event.currentTarget);
@@ -80,7 +83,7 @@ export function EquipmentForm({ mode, initial }: Props) {
   const describe = (field: keyof EquipmentFormFieldErrors) => (fieldErrors[field] ? `${field}-error` : undefined);
   const error = (field: keyof EquipmentFormFieldErrors) =>
     fieldErrors[field] && (
-      <p id={`${field}-error`} className="mt-1 text-sm text-red-700">
+      <p id={`${field}-error`} className="mt-1 text-sm text-red-700 dark:text-red-400">
         {fieldErrors[field]}
       </p>
     );
@@ -117,6 +120,7 @@ export function EquipmentForm({ mode, initial }: Props) {
 
       <form
         key={conflict ? `conflict-${conflict.latest.version}` : 'form'}
+        ref={formRef}
         action={formAction}
         onSubmit={onSubmit}
         noValidate
@@ -141,7 +145,7 @@ export function EquipmentForm({ mode, initial }: Props) {
             defaultValue={defaults.name}
             aria-invalid={fieldErrors.name ? true : undefined}
             aria-describedby={describe('name')}
-            className={inputClass}
+            className={FORM_INPUT_CLASS}
           />
           {error('name')}
         </div>
@@ -158,7 +162,7 @@ export function EquipmentForm({ mode, initial }: Props) {
             defaultValue={defaults.category}
             aria-invalid={fieldErrors.category ? true : undefined}
             aria-describedby={describe('category')}
-            className={inputClass}
+            className={FORM_INPUT_CLASS}
           />
           {error('category')}
         </div>
@@ -178,7 +182,7 @@ export function EquipmentForm({ mode, initial }: Props) {
             defaultValue={defaults.stockQuantity}
             aria-invalid={fieldErrors.stockQuantity ? true : undefined}
             aria-describedby={describe('stockQuantity')}
-            className={inputClass}
+            className={FORM_INPUT_CLASS}
           />
           {error('stockQuantity')}
         </div>
@@ -193,7 +197,7 @@ export function EquipmentForm({ mode, initial }: Props) {
             defaultValue={defaults.status}
             aria-invalid={fieldErrors.status ? true : undefined}
             aria-describedby={describe('status')}
-            className={inputClass}
+            className={FORM_INPUT_CLASS}
           >
             <option value="ACTIVE">{EQUIPMENT_STATUS_LABEL.ACTIVE}</option>
             <option value="INACTIVE">{EQUIPMENT_STATUS_LABEL.INACTIVE}</option>

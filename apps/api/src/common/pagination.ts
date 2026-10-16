@@ -3,11 +3,14 @@ import { Transform, Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { trim } from './transforms';
 
+export const MAX_PAGE = 100000;
+
 export class PageQueryDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(MAX_PAGE)
   page = 1;
 
   @IsOptional()

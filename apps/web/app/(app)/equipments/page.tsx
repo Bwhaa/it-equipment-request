@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { Equipment, Paginated } from '@app/shared';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,9 @@ import { Pagination } from '@/components/ui/pagination';
 import { apiFetch } from '@/lib/api';
 import { buildHref, parseCategory, parsePage, parseSearch } from '@/lib/list-params';
 import type { SearchParamValue } from '@/lib/list-params';
+import { FILTER_INPUT_CLASS } from '@/lib/ui-classes';
+
+export const metadata: Metadata = { title: 'รายการอุปกรณ์' };
 
 const PAGE_SIZE = 6;
 
@@ -25,8 +29,6 @@ export default async function EquipmentsPage({
     apiFetch<string[]>('/equipments/categories'),
   ]);
   const filterActive = search !== undefined || category !== undefined;
-  const inputClass =
-    'rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
 
   return (
     <section>
@@ -37,13 +39,13 @@ export default async function EquipmentsPage({
           <label htmlFor="search" className="mb-1 block text-sm font-medium">
             ค้นหาชื่ออุปกรณ์
           </label>
-          <input id="search" name="search" type="search" maxLength={100} defaultValue={search ?? ''} className={inputClass} />
+          <input id="search" name="search" type="search" maxLength={100} defaultValue={search ?? ''} className={FILTER_INPUT_CLASS} />
         </div>
         <div>
           <label htmlFor="category" className="mb-1 block text-sm font-medium">
             หมวดหมู่
           </label>
-          <select id="category" name="category" defaultValue={category ?? ''} className={inputClass}>
+          <select id="category" name="category" defaultValue={category ?? ''} className={FILTER_INPUT_CLASS}>
             <option value="">ทุกหมวดหมู่</option>
             {categories.map((name) => (
               <option key={name} value={name}>

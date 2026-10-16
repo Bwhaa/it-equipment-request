@@ -1,5 +1,8 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { EquipmentForm } from '../equipment-form';
+
+export const metadata: Metadata = { title: 'เพิ่มอุปกรณ์' };
 
 export default function NewEquipmentPage() {
   return (

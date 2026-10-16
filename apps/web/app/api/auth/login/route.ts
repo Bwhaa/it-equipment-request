@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { isApiError, makeApiError } from '@/lib/api-error';
 import { AUTH_COOKIE, authCookieOptions } from '@/lib/auth-constants';
 import { getApiUrl } from '@/lib/env';
+import { API_TIMEOUT_MS } from '@/lib/http-constants';
 import { isRole, isUuid } from '@/lib/roles';
 import { isSameOrigin } from '@/lib/same-origin';
 
@@ -67,7 +68,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       method: 'POST',
       headers,
       body: JSON.stringify({ email: body.email, password: body.password }),
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
       cache: 'no-store',
     });
   } catch {

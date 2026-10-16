@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { SignJWT } from 'jose';
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -146,6 +148,13 @@ describe('middleware (real jose)', () => {
       expect(new URL(response.headers.get('location') ?? '').pathname).toBe(expected);
       expect(isDeleted(response)).toBe(false);
     }
+  });
+
+  it('the JWT_SECRET placeholder from .env.example makes the middleware throw an error naming JWT_SECRET', async () => {
+    const text = readFileSync(fileURLToPath(new URL('../../../.env.example', import.meta.url)), 'utf8');
+    const line = text.split('\n').find((candidate) => candidate.startsWith('JWT_SECRET='));
+    process.env.JWT_SECRET = (line ?? '').slice('JWT_SECRET='.length).trim();
+    await expect(middleware(requestFor('/equipments'))).rejects.toThrow(/JWT_SECRET/);
   });
 
   it.each([[undefined], ['short-secret']])('JWT_SECRET=%p makes the middleware throw an error naming JWT_SECRET', async (value) => {

@@ -1,17 +1,18 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Alert } from '@/components/ui/alert';
+import { useFocusFirstError } from '@/components/use-focus-first-error';
 import { Button } from '@/components/ui/button';
 import { ERROR_TITLE, errorMessages } from '@/lib/error-messages';
 import { validateRequestForm } from '@/lib/request-form';
 import type { RequestFormFieldErrors } from '@/lib/request-form';
 import { createRequestAction } from './actions';
 import { initialRequestFormState } from './state';
+import { FORM_INPUT_CLASS } from '@/lib/ui-classes';
 
-const inputClass =
-  'w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+const FOCUS_ORDER = ['quantity', 'reason'] as const;
 
 export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: string; stockQuantity: number }) {
   const [state, formAction, pending] = useActionState(createRequestAction, initialRequestFormState);
@@ -21,6 +22,8 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
 
   const fieldErrors: RequestFormFieldErrors = clientErrors ?? (state.ok ? {} : (state.fieldErrors ?? {}));
   const apiError = state.ok ? undefined : state.error;
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstError(fieldErrors, FOCUS_ORDER, formRef);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     const data = new FormData(event.currentTarget);
@@ -35,7 +38,7 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
   }
 
   return (
-    <form action={formAction} onSubmit={onSubmit} noValidate className="space-y-4">
+    <form ref={formRef} action={formAction} onSubmit={onSubmit} noValidate className="space-y-4">
       <input type="hidden" name="equipmentId" value={equipmentId} />
 
       {apiError && (
@@ -63,13 +66,13 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
           defaultValue={values?.quantity ?? '1'}
           aria-invalid={fieldErrors.quantity ? true : undefined}
           aria-describedby={fieldErrors.quantity ? 'quantity-hint quantity-error' : 'quantity-hint'}
-          className={inputClass}
+          className={FORM_INPUT_CLASS}
         />
         <p id="quantity-hint" className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
           คงเหลือ {stockQuantity} ชิ้น
         </p>
         {fieldErrors.quantity && (
-          <p id="quantity-error" className="mt-1 text-sm text-red-700">
+          <p id="quantity-error" className="mt-1 text-sm text-red-700 dark:text-red-400">
             {fieldErrors.quantity}
           </p>
         )}
@@ -87,13 +90,13 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
           onChange={(event) => setReasonLength(event.target.value.length)}
           aria-invalid={fieldErrors.reason ? true : undefined}
           aria-describedby={fieldErrors.reason ? 'reason-count reason-error' : 'reason-count'}
-          className={inputClass}
+          className={FORM_INPUT_CLASS}
         />
         <p id="reason-count" className="mt-1 text-right text-xs text-neutral-600 dark:text-neutral-400">
           {reasonLength}/500
         </p>
         {fieldErrors.reason && (
-          <p id="reason-error" className="mt-1 text-sm text-red-700">
+          <p id="reason-error" className="mt-1 text-sm text-red-700 dark:text-red-400">
             {fieldErrors.reason}
           </p>
         )}

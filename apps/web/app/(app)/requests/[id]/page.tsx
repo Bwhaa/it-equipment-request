@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { RequestDetail } from '@app/shared';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -8,6 +9,8 @@ import { ApiRequestError } from '@/lib/api-error';
 import { describeAuditEntry, formatDateTime } from '@/lib/format';
 import type { SearchParamValue } from '@/lib/list-params';
 import { isUuid } from '@/lib/roles';
+
+export const metadata: Metadata = { title: 'รายละเอียดคำขอ' };
 
 /** Returns null on 404 (unknown id, or somebody else's request: the API answers both the same). */
 async function loadRequest(id: string): Promise<RequestDetail | null> {

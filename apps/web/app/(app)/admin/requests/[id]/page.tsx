@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import type { RequestDetail } from '@app/shared';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -10,6 +11,8 @@ import { EQUIPMENT_STATUS_LABEL, describeAuditEntry, formatDateTime } from '@/li
 import type { SearchParamValue } from '@/lib/list-params';
 import { isUuid } from '@/lib/roles';
 import { ReviewPanel } from './review-panel';
+
+export const metadata: Metadata = { title: 'ตรวจสอบคำขอ' };
 
 /** Returns null on 404; every other error propagates. */
 async function loadRequest(id: string): Promise<RequestDetail | null> {
