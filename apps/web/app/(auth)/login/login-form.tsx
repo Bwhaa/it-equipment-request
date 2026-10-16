@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { retryAfterMinutes } from '@/lib/retry-after';
 import { ROLE_HOME, isRole } from '@/lib/roles';
+import { FORM_INPUT_CLASS } from '@/lib/ui-classes';
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -68,9 +69,6 @@ export function LoginForm() {
     }
   }
 
-  const inputClass =
-    'w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
-
   return (
     // The inputs deliberately have no `name`: a native submit before hydration (or without JS) is a GET that
     // would put the credentials in the URL; without names it sends nothing. The state below holds the values.
@@ -92,7 +90,7 @@ export function LoginForm() {
           onChange={(event) => setEmail(event.target.value)}
           aria-invalid={emailError ? true : undefined}
           aria-describedby={emailError ? 'email-error' : undefined}
-          className={inputClass}
+          className={FORM_INPUT_CLASS}
         />
         {emailError && (
           <p id="email-error" className="mt-1 text-sm text-red-700">
@@ -112,7 +110,7 @@ export function LoginForm() {
           onChange={(event) => setPassword(event.target.value)}
           aria-invalid={passwordError ? true : undefined}
           aria-describedby={passwordError ? 'password-error' : undefined}
-          className={inputClass}
+          className={FORM_INPUT_CLASS}
         />
         {passwordError && (
           <p id="password-error" className="mt-1 text-sm text-red-700">

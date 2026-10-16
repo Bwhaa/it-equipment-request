@@ -11,9 +11,7 @@ import { EQUIPMENT_STATUS_LABEL } from '@/lib/format';
 import { createEquipmentAction, updateEquipmentAction } from './actions';
 import { initialEquipmentFormState } from './state';
 import type { EquipmentFormValues } from './state';
-
-const inputClass =
-  'w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+import { FORM_INPUT_CLASS } from '@/lib/ui-classes';
 
 interface Props {
   mode: 'create' | 'edit';
@@ -141,7 +139,7 @@ export function EquipmentForm({ mode, initial }: Props) {
             defaultValue={defaults.name}
             aria-invalid={fieldErrors.name ? true : undefined}
             aria-describedby={describe('name')}
-            className={inputClass}
+            className={FORM_INPUT_CLASS}
           />
           {error('name')}
         </div>
@@ -158,7 +156,7 @@ export function EquipmentForm({ mode, initial }: Props) {
             defaultValue={defaults.category}
             aria-invalid={fieldErrors.category ? true : undefined}
             aria-describedby={describe('category')}
-            className={inputClass}
+            className={FORM_INPUT_CLASS}
           />
           {error('category')}
         </div>
@@ -178,7 +176,7 @@ export function EquipmentForm({ mode, initial }: Props) {
             defaultValue={defaults.stockQuantity}
             aria-invalid={fieldErrors.stockQuantity ? true : undefined}
             aria-describedby={describe('stockQuantity')}
-            className={inputClass}
+            className={FORM_INPUT_CLASS}
           />
           {error('stockQuantity')}
         </div>
@@ -193,7 +191,7 @@ export function EquipmentForm({ mode, initial }: Props) {
             defaultValue={defaults.status}
             aria-invalid={fieldErrors.status ? true : undefined}
             aria-describedby={describe('status')}
-            className={inputClass}
+            className={FORM_INPUT_CLASS}
           >
             <option value="ACTIVE">{EQUIPMENT_STATUS_LABEL.ACTIVE}</option>
             <option value="INACTIVE">{EQUIPMENT_STATUS_LABEL.INACTIVE}</option>

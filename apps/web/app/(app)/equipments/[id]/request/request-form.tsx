@@ -9,9 +9,7 @@ import { validateRequestForm } from '@/lib/request-form';
 import type { RequestFormFieldErrors } from '@/lib/request-form';
 import { createRequestAction } from './actions';
 import { initialRequestFormState } from './state';
-
-const inputClass =
-  'w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+import { FORM_INPUT_CLASS } from '@/lib/ui-classes';
 
 export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: string; stockQuantity: number }) {
   const [state, formAction, pending] = useActionState(createRequestAction, initialRequestFormState);
@@ -63,7 +61,7 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
           defaultValue={values?.quantity ?? '1'}
           aria-invalid={fieldErrors.quantity ? true : undefined}
           aria-describedby={fieldErrors.quantity ? 'quantity-hint quantity-error' : 'quantity-hint'}
-          className={inputClass}
+          className={FORM_INPUT_CLASS}
         />
         <p id="quantity-hint" className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
           คงเหลือ {stockQuantity} ชิ้น
@@ -87,7 +85,7 @@ export function RequestForm({ equipmentId, stockQuantity }: { equipmentId: strin
           onChange={(event) => setReasonLength(event.target.value.length)}
           aria-invalid={fieldErrors.reason ? true : undefined}
           aria-describedby={fieldErrors.reason ? 'reason-count reason-error' : 'reason-count'}
-          className={inputClass}
+          className={FORM_INPUT_CLASS}
         />
         <p id="reason-count" className="mt-1 text-right text-xs text-neutral-600 dark:text-neutral-400">
           {reasonLength}/500

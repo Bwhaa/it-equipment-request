@@ -7,9 +7,7 @@ import type { ApprovalBlock } from '@/lib/approval';
 import { ERROR_TITLE, errorMessages } from '@/lib/error-messages';
 import { approveRequestAction, rejectRequestAction } from './actions';
 import { initialReviewActionState } from './state';
-
-const inputClass =
-  'w-full rounded border border-neutral-400 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+import { FORM_INPUT_CLASS } from '@/lib/ui-classes';
 
 /**
  * Stays mounted after the request has been reviewed (`reviewed`), so an error returned by a stale
@@ -67,7 +65,7 @@ export function ReviewPanel({ id, block, reviewed }: { id: string; block: Approv
                   onChange={(event) => setReasonLength(event.target.value.length)}
                   aria-invalid={reasonError ? true : undefined}
                   aria-describedby={reasonError ? 'reason-count reason-error' : 'reason-count'}
-                  className={inputClass}
+                  className={FORM_INPUT_CLASS}
                 />
                 <p id="reason-count" className="mt-1 text-right text-xs text-neutral-600 dark:text-neutral-400">
                   {reasonLength}/500
