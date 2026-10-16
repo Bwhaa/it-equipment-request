@@ -1,0 +1,13 @@
+**/.env
+**/.env.*
+**/node_modules
+**/dist
+**/dist-prisma
+**/.next
+**/coverage
+.git
+docs
+**/*.log
+.claude
+apps/api/test
+apps/web/test

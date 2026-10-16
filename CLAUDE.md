@@ -17,6 +17,7 @@
   wrappers to runtime scripts.
 - Do not upgrade majors (Next 16, Prisma 7, ...) or add packages not in the plan without asking.
 - `TRUST_PROXY` stays unset by default: the per-IP login limit is OFF and the per-email limit is the primary protection. Next ALWAYS sets `X-Forwarded-For` (the TCP peer of its caller) when the client sent none, passes a client-sent value through unchanged, and the BFF forwards it to the API. Set `TRUST_PROXY` only when a trusted reverse proxy overwrites or sets `X-Forwarded-For`; otherwise a client can spoof it, and in local Docker/WSL all browsers share the gateway address so one shared bucket would lock everybody out. Never add TRUST_PROXY to the user's `.env`.
+- Containers run as the non-root `node` user; the web container receives only the variables it needs (no DATABASE_URL); the image never contains any env file; `.sh` files and Dockerfiles use LF line endings (`.gitattributes`).
 
 ## Git
 - `main` holds only the initial commit until submission. All work happens on `develop`.
@@ -27,6 +28,7 @@
 
 ## Commands
 - `docker compose up -d db`
+- Full stack in containers: `cp .env.example .env && docker compose up --build` (db + api + web). The api container applies `prisma migrate deploy` and seeds only when the users table is empty. `docker compose up -d db` still starts only the database for local development.
 - `pnpm --filter api db:migrate` / `db:seed` / `db:reset` — these wrap the Prisma CLI
   with `dotenv -e ../../.env --`. Never run `prisma` directly: it cannot see the root `.env`.
   Only exception: `prisma migrate deploy` in the e2e global setup, where DATABASE_URL is
@@ -135,5 +137,6 @@
 - Smoke tests against the dev API are read-only (GET + login only). Anything that creates or changes data runs in e2e on the test database.
 - Never run `rm` with a variable that could be empty or unquoted: use a literal path or `"${VAR:?}"`.
 - Never commit `.env` or secrets.
+- Verify Docker changes in a throwaway compose project named `itreq-verify` built from a copy of the git-visible files; never test on the user's project or volume. `docker compose -p itreq-verify down` and `docker volume rm itreq-verify_db_data` are allowed ONLY for that project; `down -v`, `db:reset` and migrate reset stay forbidden everywhere else.
 - End every task with: files changed, commands run + results, acceptance criteria
   checked one by one, open questions, follow-ups.
