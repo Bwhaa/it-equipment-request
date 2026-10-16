@@ -27,14 +27,6 @@ const NOT_YET_MIGRATED: string[] = [
   'app/(auth)/login/login-form.tsx',
   'app/(auth)/login/page.tsx',
   'app/error.tsx',
-  'components/ui/alert.tsx',
-  'components/ui/badge.tsx',
-  'components/ui/button.tsx',
-  'components/ui/empty-state.tsx',
-  'components/ui/error-state.tsx',
-  'components/ui/nav-link.tsx',
-  'components/ui/pagination.tsx',
-  'components/ui/skeleton.tsx',
 ];
 
 function walk(directory: string): string[] {

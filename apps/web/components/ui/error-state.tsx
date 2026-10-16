@@ -17,7 +17,7 @@ export function ErrorState({
   const router = useRouter();
 
   return (
-    <div role="alert" className="rounded border border-red-400 bg-red-50 p-4 text-red-900">
+    <div role="alert" className="rounded-card border border-danger-text bg-danger-bg p-4 text-danger-text">
       <p className="font-medium">{title}</p>
       <p className="mt-1 text-sm">{message}</p>
       <Button

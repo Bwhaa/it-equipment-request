@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { buildHref } from '@/lib/list-params';
 
-const LINK = 'rounded border border-neutral-400 px-3 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800';
-const DISABLED = 'rounded border border-neutral-300 px-3 py-1 text-sm text-neutral-400';
+const PILL = 'inline-flex h-11 items-center rounded-pill px-5 text-[15px] font-semibold transition-colors';
+const LINK = `${PILL} border border-ink bg-surface text-ink hover:bg-ground`;
+const DISABLED = `${PILL} bg-disabled-bg text-disabled-text`;
 
 export function Pagination({
   basePath,
@@ -28,7 +29,7 @@ export function Pagination({
           ก่อนหน้า
         </span>
       )}
-      <span className="text-sm">
+      <span className="text-sm text-muted">
         หน้า {page} จาก {totalPages}
       </span>
       {page < totalPages ? (

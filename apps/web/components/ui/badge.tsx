@@ -5,15 +5,15 @@ import { STATUS_LABEL } from '@/lib/format';
 export type BadgeTone = 'neutral' | 'warning' | 'success' | 'danger';
 
 const TONE: Record<BadgeTone, string> = {
-  neutral: 'border-neutral-400 bg-neutral-100 text-neutral-800',
-  warning: 'border-amber-500 bg-amber-50 text-amber-900',
-  success: 'border-green-600 bg-green-50 text-green-900',
-  danger: 'border-red-600 bg-red-50 text-red-900',
+  neutral: 'bg-chip-bg text-chip-text',
+  warning: 'bg-pending-bg text-pending-text',
+  success: 'bg-approved-bg text-approved-text',
+  danger: 'bg-danger-bg text-danger-text',
 };
 
 export function Badge({ tone = 'neutral', children }: { tone?: BadgeTone; children: ReactNode }) {
   return (
-    <span className={`inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${TONE[tone]}`}>{children}</span>
+    <span className={`inline-block rounded-pill px-3 py-1 text-[13px] font-semibold ${TONE[tone]}`}>{children}</span>
   );
 }
 

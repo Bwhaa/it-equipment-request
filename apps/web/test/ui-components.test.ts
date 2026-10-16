@@ -22,8 +22,8 @@ describe('Button and buttonClasses', () => {
     const primary = render(createElement(Button, null, 'บันทึก'));
     const secondary = render(createElement(Button, { variant: 'secondary' }, 'ยกเลิก'));
     expect(primary).toContain('type="button"');
-    expect(primary).toContain('bg-blue-600');
-    expect(secondary).toContain('border border-neutral-400');
+    expect(primary).toContain('bg-brand');
+    expect(secondary).toContain('border border-ink');
     expect(primary).not.toContain('disabled');
     expect(primary).not.toContain('aria-disabled');
     expect([primary, secondary]).toMatchSnapshot();
@@ -48,9 +48,9 @@ describe('Button and buttonClasses', () => {
 describe('Badge and StatusBadge', () => {
   it('Badge renders its text with the tone classes', () => {
     const tones = (['neutral', 'warning', 'success', 'danger'] as const).map((tone) => render(createElement(Badge, { tone, children: tone })));
-    expect(tones[1]).toContain('amber');
-    expect(tones[2]).toContain('green');
-    expect(tones[3]).toContain('red');
+    expect(tones[1]).toContain('pending-text');
+    expect(tones[2]).toContain('approved-text');
+    expect(tones[3]).toContain('danger-text');
     expect(tones).toMatchSnapshot();
   });
 
@@ -157,7 +157,7 @@ describe('NavLink', () => {
     const active = render(createElement(NavLink, { href: '/equipments', children: 'อุปกรณ์' }));
     const inactive = render(createElement(NavLink, { href: '/requests', children: 'คำขอของฉัน' }));
     expect(active).toContain('aria-current="page"');
-    expect(active).toContain('bg-blue-600');
+    expect(active).toContain('bg-inverse');
     expect(inactive).not.toContain('aria-current');
     expect([active, inactive]).toMatchSnapshot();
   });

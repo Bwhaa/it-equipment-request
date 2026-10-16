@@ -2,58 +2,58 @@
 
 exports[`Alert > error uses role="alert"; notice and warning use role="status" 1`] = `
 [
-  "<div role="alert" class="rounded border p-3 text-sm border-red-400 bg-red-50 text-red-900"><p class="font-medium">ผิดพลาด</p></div>",
-  "<div role="status" class="rounded border p-3 text-sm border-green-500 bg-green-50 text-green-900">สำเร็จ</div>",
-  "<div role="status" class="rounded border p-3 text-sm border-amber-400 bg-amber-50 text-amber-900"><p class="font-medium">เตือน</p></div>",
+  "<div role="alert" class="rounded-field border p-4 text-sm border-danger-text bg-danger-bg text-danger-text"><p class="font-medium">ผิดพลาด</p></div>",
+  "<div role="status" class="rounded-field border p-4 text-sm border-brand bg-brand-tint text-approved-text">สำเร็จ</div>",
+  "<div role="status" class="rounded-field border p-4 text-sm border-pending-text bg-pending-bg text-pending-text"><p class="font-medium">เตือน</p></div>",
 ]
 `;
 
 exports[`Badge and StatusBadge > Badge renders its text with the tone classes 1`] = `
 [
-  "<span class="inline-block rounded-full border px-2 py-0.5 text-xs font-medium border-neutral-400 bg-neutral-100 text-neutral-800">neutral</span>",
-  "<span class="inline-block rounded-full border px-2 py-0.5 text-xs font-medium border-amber-500 bg-amber-50 text-amber-900">warning</span>",
-  "<span class="inline-block rounded-full border px-2 py-0.5 text-xs font-medium border-green-600 bg-green-50 text-green-900">success</span>",
-  "<span class="inline-block rounded-full border px-2 py-0.5 text-xs font-medium border-red-600 bg-red-50 text-red-900">danger</span>",
+  "<span class="inline-block rounded-pill px-3 py-1 text-[13px] font-semibold bg-chip-bg text-chip-text">neutral</span>",
+  "<span class="inline-block rounded-pill px-3 py-1 text-[13px] font-semibold bg-pending-bg text-pending-text">warning</span>",
+  "<span class="inline-block rounded-pill px-3 py-1 text-[13px] font-semibold bg-approved-bg text-approved-text">success</span>",
+  "<span class="inline-block rounded-pill px-3 py-1 text-[13px] font-semibold bg-danger-bg text-danger-text">danger</span>",
 ]
 `;
 
-exports[`Badge and StatusBadge > StatusBadge APPROVED shows the TEXT label (colour is never the only signal) 1`] = `"<span class="inline-block rounded-full border px-2 py-0.5 text-xs font-medium border-green-600 bg-green-50 text-green-900">อนุมัติแล้ว</span>"`;
+exports[`Badge and StatusBadge > StatusBadge APPROVED shows the TEXT label (colour is never the only signal) 1`] = `"<span class="inline-block rounded-pill px-3 py-1 text-[13px] font-semibold bg-approved-bg text-approved-text">อนุมัติแล้ว</span>"`;
 
-exports[`Badge and StatusBadge > StatusBadge PENDING shows the TEXT label (colour is never the only signal) 1`] = `"<span class="inline-block rounded-full border px-2 py-0.5 text-xs font-medium border-amber-500 bg-amber-50 text-amber-900">รออนุมัติ</span>"`;
+exports[`Badge and StatusBadge > StatusBadge PENDING shows the TEXT label (colour is never the only signal) 1`] = `"<span class="inline-block rounded-pill px-3 py-1 text-[13px] font-semibold bg-pending-bg text-pending-text">รออนุมัติ</span>"`;
 
-exports[`Badge and StatusBadge > StatusBadge REJECTED shows the TEXT label (colour is never the only signal) 1`] = `"<span class="inline-block rounded-full border px-2 py-0.5 text-xs font-medium border-red-600 bg-red-50 text-red-900">ปฏิเสธ</span>"`;
+exports[`Badge and StatusBadge > StatusBadge REJECTED shows the TEXT label (colour is never the only signal) 1`] = `"<span class="inline-block rounded-pill px-3 py-1 text-[13px] font-semibold bg-danger-bg text-danger-text">ปฏิเสธ</span>"`;
 
-exports[`Button and buttonClasses > a disabled button carries disabled AND aria-disabled="true" and the dimmed classes 1`] = `"<button type="submit" disabled="" aria-disabled="true" class="inline-flex items-center justify-center rounded px-3 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 bg-blue-600 text-white hover:bg-blue-700 cursor-not-allowed opacity-50 hover:bg-inherit">ส่งคำขอ</button>"`;
+exports[`Button and buttonClasses > a disabled button carries disabled AND aria-disabled="true" and the dimmed classes 1`] = `"<button type="submit" disabled="" aria-disabled="true" class="inline-flex items-center justify-center rounded-pill font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text h-12 px-7 text-base bg-disabled-bg text-disabled-text cursor-not-allowed">ส่งคำขอ</button>"`;
 
 exports[`Button and buttonClasses > primary and secondary variants render a <button type="button"> by default 1`] = `
 [
-  "<button type="button" class="inline-flex items-center justify-center rounded px-3 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 bg-blue-600 text-white hover:bg-blue-700">บันทึก</button>",
-  "<button type="button" class="inline-flex items-center justify-center rounded px-3 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 border border-neutral-400 bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800">ยกเลิก</button>",
+  "<button type="button" class="inline-flex items-center justify-center rounded-pill font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text h-12 px-7 text-base bg-brand text-on-brand hover:bg-brand-strong">บันทึก</button>",
+  "<button type="button" class="inline-flex items-center justify-center rounded-pill font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text h-12 px-7 text-base border border-ink bg-surface text-ink hover:bg-ground">ยกเลิก</button>",
 ]
 `;
 
-exports[`EmptyState > with an action renders a link to the given href 1`] = `"<div class="rounded border border-dashed border-neutral-400 p-8 text-center"><p class="font-medium">ว่าง</p><a class="inline-flex items-center justify-center rounded px-3 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 border border-neutral-400 bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 mt-4" href="/equipments">ไปเลือกอุปกรณ์</a></div>"`;
+exports[`EmptyState > with an action renders a link to the given href 1`] = `"<div class="rounded-card border border-dashed border-field-line bg-surface p-8 text-center"><p class="font-medium">ว่าง</p><a class="inline-flex items-center justify-center rounded-pill font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text h-12 px-7 text-base border border-ink bg-surface text-ink hover:bg-ground mt-4" href="/equipments">ไปเลือกอุปกรณ์</a></div>"`;
 
 exports[`EmptyState > without an action renders only the title (and the description when given) 1`] = `
 [
-  "<div class="rounded border border-dashed border-neutral-400 p-8 text-center"><p class="font-medium">ยังไม่มีอุปกรณ์</p></div>",
-  "<div class="rounded border border-dashed border-neutral-400 p-8 text-center"><p class="font-medium">ไม่พบ</p><p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">ลองเปลี่ยนคำค้นหา</p></div>",
+  "<div class="rounded-card border border-dashed border-field-line bg-surface p-8 text-center"><p class="font-medium">ยังไม่มีอุปกรณ์</p></div>",
+  "<div class="rounded-card border border-dashed border-field-line bg-surface p-8 text-center"><p class="font-medium">ไม่พบ</p><p class="mt-1 text-sm text-muted">ลองเปลี่ยนคำค้นหา</p></div>",
 ]
 `;
 
-exports[`ErrorState > shows the title, the message and a retry button inside role="alert" 1`] = `"<div role="alert" class="rounded border border-red-400 bg-red-50 p-4 text-red-900"><p class="font-medium">โหลดไม่ได้</p><p class="mt-1 text-sm">ลองใหม่อีกครั้ง</p><button type="button" class="inline-flex items-center justify-center rounded px-3 py-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 border border-neutral-400 bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 mt-3">ลองใหม่</button></div>"`;
+exports[`ErrorState > shows the title, the message and a retry button inside role="alert" 1`] = `"<div role="alert" class="rounded-card border border-danger-text bg-danger-bg p-4 text-danger-text"><p class="font-medium">โหลดไม่ได้</p><p class="mt-1 text-sm">ลองใหม่อีกครั้ง</p><button type="button" class="inline-flex items-center justify-center rounded-pill font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text h-12 px-7 text-base border border-ink bg-surface text-ink hover:bg-ground mt-3">ลองใหม่</button></div>"`;
 
 exports[`NavLink > is aria-current="page" when the path equals or is below the href, otherwise not 1`] = `
 [
-  "<a aria-current="page" class="rounded px-3 py-1 text-sm bg-blue-600 text-white" href="/equipments">อุปกรณ์</a>",
-  "<a class="rounded px-3 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800" href="/requests">คำขอของฉัน</a>",
+  "<a aria-current="page" class="inline-flex h-11 items-center rounded-pill px-5 text-[15px] font-semibold transition-colors bg-inverse text-on-inverse" href="/equipments">อุปกรณ์</a>",
+  "<a class="inline-flex h-11 items-center rounded-pill px-5 text-[15px] font-semibold transition-colors text-muted hover:bg-ground" href="/requests">คำขอของฉัน</a>",
 ]
 `;
 
-exports[`Pagination > first page: "previous" is a disabled span (not a link), "next" links to page 2 and keeps the filter 1`] = `"<nav aria-label="การแบ่งหน้า" class="mt-6 flex items-center justify-center gap-3"><span aria-disabled="true" class="rounded border border-neutral-300 px-3 py-1 text-sm text-neutral-400">ก่อนหน้า</span><span class="text-sm">หน้า 1 จาก 3</span><a rel="next" class="rounded border border-neutral-400 px-3 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800" href="/requests?status=PENDING&amp;page=2">ถัดไป</a></nav>"`;
+exports[`Pagination > first page: "previous" is a disabled span (not a link), "next" links to page 2 and keeps the filter 1`] = `"<nav aria-label="การแบ่งหน้า" class="mt-6 flex items-center justify-center gap-3"><span aria-disabled="true" class="inline-flex h-11 items-center rounded-pill px-5 text-[15px] font-semibold transition-colors bg-disabled-bg text-disabled-text">ก่อนหน้า</span><span class="text-sm text-muted">หน้า 1 จาก 3</span><a rel="next" class="inline-flex h-11 items-center rounded-pill px-5 text-[15px] font-semibold transition-colors border border-ink bg-surface text-ink hover:bg-ground" href="/requests?status=PENDING&amp;page=2">ถัดไป</a></nav>"`;
 
-exports[`Pagination > last page: "next" is a disabled span (not a link) 1`] = `"<nav aria-label="การแบ่งหน้า" class="mt-6 flex items-center justify-center gap-3"><a rel="prev" class="rounded border border-neutral-400 px-3 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800" href="/requests?status=PENDING&amp;page=2">ก่อนหน้า</a><span class="text-sm">หน้า 3 จาก 3</span><span aria-disabled="true" class="rounded border border-neutral-300 px-3 py-1 text-sm text-neutral-400">ถัดไป</span></nav>"`;
+exports[`Pagination > last page: "next" is a disabled span (not a link) 1`] = `"<nav aria-label="การแบ่งหน้า" class="mt-6 flex items-center justify-center gap-3"><a rel="prev" class="inline-flex h-11 items-center rounded-pill px-5 text-[15px] font-semibold transition-colors border border-ink bg-surface text-ink hover:bg-ground" href="/requests?status=PENDING&amp;page=2">ก่อนหน้า</a><span class="text-sm text-muted">หน้า 3 จาก 3</span><span aria-disabled="true" class="inline-flex h-11 items-center rounded-pill px-5 text-[15px] font-semibold transition-colors bg-disabled-bg text-disabled-text">ถัดไป</span></nav>"`;
 
-exports[`Pagination > middle page: both directions are links (page 1 drops the page parameter) 1`] = `"<nav aria-label="การแบ่งหน้า" class="mt-6 flex items-center justify-center gap-3"><a rel="prev" class="rounded border border-neutral-400 px-3 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800" href="/requests?status=PENDING">ก่อนหน้า</a><span class="text-sm">หน้า 2 จาก 3</span><a rel="next" class="rounded border border-neutral-400 px-3 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800" href="/requests?status=PENDING&amp;page=3">ถัดไป</a></nav>"`;
+exports[`Pagination > middle page: both directions are links (page 1 drops the page parameter) 1`] = `"<nav aria-label="การแบ่งหน้า" class="mt-6 flex items-center justify-center gap-3"><a rel="prev" class="inline-flex h-11 items-center rounded-pill px-5 text-[15px] font-semibold transition-colors border border-ink bg-surface text-ink hover:bg-ground" href="/requests?status=PENDING">ก่อนหน้า</a><span class="text-sm text-muted">หน้า 2 จาก 3</span><a rel="next" class="inline-flex h-11 items-center rounded-pill px-5 text-[15px] font-semibold transition-colors border border-ink bg-surface text-ink hover:bg-ground" href="/requests?status=PENDING&amp;page=3">ถัดไป</a></nav>"`;
 
-exports[`Skeleton > is hidden from assistive technology and takes extra classes 1`] = `"<div aria-hidden="true" class="animate-pulse rounded bg-neutral-200 dark:bg-neutral-800 h-6 w-40"></div>"`;
+exports[`Skeleton > is hidden from assistive technology and takes extra classes 1`] = `"<div aria-hidden="true" class="animate-pulse rounded-field bg-chip-bg h-6 w-40"></div>"`;
